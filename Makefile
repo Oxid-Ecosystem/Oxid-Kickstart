@@ -1,4 +1,4 @@
-.PHONY: help init test start docs
+.PHONY: help go init test start docs
 
 SHELL := /bin/bash
 
@@ -15,11 +15,24 @@ help:
 	@echo ""
 	@echo "  OxidDB starter kit"
 	@echo ""
+	@echo "  make go       Set up, check the instance, and start a session in one go"
+	@echo ""
 	@echo "  make init     Create .env by entering your instance URL and API key"
 	@echo "  make test     Check that your OxidDB instance is online and reachable"
 	@echo "  make start    Open an interactive feasibility session for your idea"
 	@echo "  make docs     List the documentation versions bundled in ./docs"
 	@echo ""
+
+# ---------------------------------------------------------------------------
+# make go: init -> test -> start in one command
+#
+# Each step is a sub-make so .env, written by init, is loaded fresh before test
+# and start read OXID_URL / OXID_API_KEY. Stops at the first step that fails.
+# ---------------------------------------------------------------------------
+go:
+	@$(MAKE) --no-print-directory init
+	@$(MAKE) --no-print-directory test
+	@$(MAKE) --no-print-directory start
 
 # ---------------------------------------------------------------------------
 # make init: prompt for instance details and write .env
