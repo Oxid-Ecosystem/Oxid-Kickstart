@@ -46,7 +46,7 @@ This writes a `.env` file (gitignored) with `OXID_URL` and `OXID_API_KEY`. If
 you would rather do it by hand, copy `.env.example` to `.env` and fill in the
 values yourself.
 
-Drop the documentation bundle into `./docs`, one folder per engine version:
+Drop the documentation bundle into `./docs`, (if you have a different version) one folder per engine version:
 
 ```
 docs/
