@@ -21,22 +21,9 @@ explainable rules, and any product where "what is this similar to" and "what is
 this connected to" are both first-class questions. It is not the right tool for
 everything, and the kit is designed to tell you that honestly when it applies.
 
-## Quick start
-
-One command takes you from a fresh clone to a running feasibility session:
-
-```bash
-make go
-```
-
-It prompts for your instance URL and API key, writes `.env`, checks that the
-instance is reachable and the key is accepted, then opens the session. If the
-health check fails it stops there so you can fix the connection first.
-
 ## Setup
 
-Prefer to go step by step? Run the interactive setup and enter your instance URL
-and API key when prompted:
+Run the interactive setup and enter your instance URL and API key when prompted:
 
 ```bash
 make init
@@ -57,19 +44,12 @@ docs/
 ## Commands
 
 ```bash
-make go        # init + test + start in one command
 make init      # create .env by entering your instance URL and API key
 make test      # check that your instance is online and your key works
 make start     # open a feasibility session for your idea
 make docs      # list the documentation versions you have locally
 make help      # print this list
 ```
-
-## make go
-
-Runs `make init`, `make test` and `make start` in sequence and stops at the first
-one that fails. If a `.env` already exists, `init` asks before overwriting it, so
-`make go` is also a fine way to re-run the whole flow later.
 
 ## make init
 
