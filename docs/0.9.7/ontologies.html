@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ontologies: Oxid-DB Documentation (0.9.7)</title>
+  <meta name="description" content="What an ontology is in Oxid-DB and how you build one: classes, subclasses, disjointness, and individuals over a shared Term identifier, the symbolic half of the model." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="mask-icon" href="favicon.svg" color="#143f61" />
+
+  <!-- Prevent theme flash: apply stored theme before first paint -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('oxid-theme') || 'system';
+        var resolved = stored === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : stored;
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme-pref', stored);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+
+  <!-- ==================================================== HEADER -->
+  <header class="header">
+    <button class="icon-btn hamburger" id="hamburger" aria-label="Open navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <a class="brand" href="index.html" aria-label="Oxid-DB documentation home">
+      <svg class="logo-svg" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <g>
+          <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+          <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+          <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+          <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+          <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+          <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+          <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+          <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+          <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+          <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+        </g>
+      </svg>
+      <span class="brand-sub">Docs</span>
+    </a>
+
+    <div class="header-spacer"></div>
+
+    <button class="search-trigger" id="searchTrigger" aria-label="Search documentation">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <span class="st-label">Search documentation…</span>
+      <span class="kbd">/</span>
+    </button>
+
+    <div class="dropdown-wrap">
+      <button class="ctrl" id="versionBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="ctrl-label">Version</span>
+        <strong style="color:var(--text)">0.9.7</strong>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="dropdown" id="versionMenu" role="menu">
+        <a class="dropdown-item" href="../0.9.8/index.html">0.9.8 <span class="tag current">Current</span></a>
+        <a class="dropdown-item" href="../0.9.7/index.html" aria-current="true">0.9.7 <span class="tag maintained">Previous · viewing</span></a>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme" aria-haspopup="true" aria-expanded="false">
+        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
+      </button>
+      <div class="dropdown" id="themeMenu" role="menu">
+        <button class="dropdown-item" data-theme-set="light">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          Light <span class="check" data-check="light">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="dark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          Dark <span class="check" data-check="dark">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="system">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          System <span class="check" data-check="system">✓</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- ==================================================== SHELL -->
+  <div class="shell">
+
+    <div class="version-banner">
+      <span class="dot">●</span>
+      <span>You're reading the docs for <strong>Oxid-DB 0.9.7</strong>, the previous release. The current release is <strong>0.9.8</strong>: <a href="../0.9.8/index.html">read the current docs</a> or <a href="../0.9.8/changelog.html">see what changed</a>.</span>
+    </div>
+
+    <!-- ============================ SHARED SIDEBAR (do not edit per-page; docs.js marks the active link) -->
+    <nav class="sidebar" id="sidebar" aria-label="Documentation">
+      <div class="nav-group">
+        <div class="nav-group-label">Getting Started</div>
+        <a class="nav-item" href="index.html">Introduction</a>
+        <a class="nav-item" href="quickstart.html">Quick Start</a>
+        <a class="nav-item" href="access.html">Access &amp; Hosting</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Core Concepts</div>
+        <a class="nav-item" href="ontologies.html">Ontologies</a>
+        <a class="nav-item" href="reasoning.html">Reasoning (OWL 2 EL&perp;)</a>
+        <a class="nav-item" href="vectors.html">Vector Search</a>
+        <a class="nav-item" href="hybrid-queries.html">Hybrid Queries <span class="badge">core</span></a>
+        <a class="nav-item" href="scoring.html">Scoring &amp; Ranking</a>
+        <a class="nav-item" href="kge.html">Link Prediction (KGE)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">OxQL Query Language</div>
+        <a class="nav-item" href="oxql.html">OxQL Overview</a>
+        <a class="nav-item" href="documents-queries.html">Querying Documents</a>
+        <a class="nav-item" href="aggregation.html">Aggregation</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Document Store</div>
+        <a class="nav-item" href="documents.html">Overview</a>
+        <a class="nav-item" href="documents-insert.html">Inserting &amp; Bulk Loading</a>
+        <a class="nav-item" href="documents-indexing.html">Indexing &amp; Schema</a>
+        <a class="nav-item" href="ontology-bridge.html">The Ontology Bridge</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Server &amp; SDKs</div>
+        <a class="nav-item" href="api.html">HTTP API</a>
+        <a class="nav-item" href="sdks.html">SDKs &amp; Clients</a>
+        <a class="nav-item" href="transactions.html">Transactions</a>
+        <a class="nav-item" href="mcp.html">MCP Integration</a>
+        <a class="nav-item" href="web-ui.html">Web UI</a>
+        <a class="nav-item" href="authentication.html">Authentication</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Operations</div>
+        <a class="nav-item" href="operations.html">Install, CLI &amp; Settings</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Architecture</div>
+        <a class="nav-item" href="architecture.html">System Design</a>
+        <a class="nav-item" href="storage.html">Storage &amp; Durability</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Reference</div>
+        <a class="nav-item" href="changelog.html">Changelog</a>
+      </div>
+    </nav>
+
+    <!-- ============================ ARTICLE: the ONLY region a page fills -->
+    <main class="article">
+      <div class="breadcrumb"><a href="index.html">Docs</a> / Core Concepts / <span>Ontologies</span></div>
+
+      <h1>Ontologies</h1>
+      <p class="lead">An ontology is the symbolic half of the Oxid-DB model: a shared vocabulary of meaning made of classes, individuals, and the logical rules that connect them. This page explains what an ontology is and how you build one over the HTTP API and the SDKs.</p>
+
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body">
+          <span class="co-title"><span class="ver-badge">New in 0.9.7</span></span>
+          Version 0.9.7 lets you author a <strong>role hierarchy live</strong>: <code>POST /actions/add-axiom</code> gains the <code>kind</code>&nbsp;<code>&quot;subproperty&quot;</code>, so a sub-property edge no longer needs a file import. Ontology import also grows: <code>POST /import/owl</code> now accepts <strong>OWL Functional Syntax</strong> (<code>.ofn</code>), <strong>OBO</strong> (<code>.obo</code>), <strong>Manchester</strong> (<code>.omn</code>), <strong>Turtle</strong> (<code>.ttl</code>), and <strong>N-Triples</strong> (<code>.nt</code>) alongside OWL/XML, all mapped through the same EL&perp; fragment. See the <a href="changelog.html">Changelog</a> for the full 0.9.6&nbsp;&rarr;&nbsp;0.9.7 difference.
+        </div>
+      </div>
+
+      <h2>What is an ontology?</h2>
+      <p>An ontology is a formal description of the <strong>concepts</strong> in your domain and the <strong>relationships</strong> between them. If you have used a relational database, you already know a schema: tables, columns, foreign keys. An ontology does the same job of describing your data, and then goes one step further. It records <em>meaning</em>, not just structure, in a form the database can reason over.</p>
+      <p>It is built from three kinds of thing:</p>
+      <ul>
+        <li><strong>Classes</strong>: categories of things, like <code>Beer</code> or <code>Wine</code>. (A relational schema would call these tables.)</li>
+        <li><strong>Individuals</strong>: the concrete instances that belong to a class, like <code>Heineken</code> or <code>Guinness</code>. (A schema would call these rows.)</li>
+        <li><strong>Axioms</strong>: logical statements about the classes and individuals, like "every Pilsner is a Beer" or "nothing is both a Beer and a Wine". This is the part a plain schema has no equivalent for.</li>
+      </ul>
+      <p>The difference from a schema is that these relationships carry logical weight. When you declare <code>Pilsner</code> is a subclass of <code>Beer</code>, you are not just filing it in a folder: you are stating a rule the <a href="reasoning.html">reasoner</a> uses to draw new conclusions automatically. Assert that <code>Heineken</code> is a <code>Pilsner</code> and the database will infer, without you writing it down, that <code>Heineken</code> is also a <code>Beer</code>.</p>
+
+      <h2>Where to find existing ontologies</h2>
+      <p>You do not have to build an ontology from scratch. Thousands of high-quality ontologies are already published for free, and Oxid-DB can <a href="#importing-an-existing-ontology">import an OWL file</a> directly. Starting from a community ontology gives you a vetted vocabulary and, very often, a ready-made class hierarchy for the <a href="reasoning.html">reasoner</a> to work over.</p>
+
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body">
+          <span class="co-title">Pick an import-compatible serialization</span>
+          Oxid-DB's <code>/import/owl</code> accepts OWL functional syntax (<code>.ofn</code>), OWL/XML (<code>.owx</code>), Turtle (<code>.ttl</code>), and the other formats listed under <a href="#importing-an-existing-ontology">Importing an existing ontology</a>. Some repositories serve <strong>RDF/XML</strong> by default, which is <em>not</em> accepted: download an alternative serialization where offered, or convert the file (for example in <a href="https://protege.stanford.edu/" target="_blank" rel="noopener">Protégé</a>) before importing.
+        </div>
+      </div>
+
+      <h3>General-purpose</h3>
+      <p>The best starting points for cross-domain and Semantic Web vocabularies:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Repository</th><th>Best for</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://lov.linkeddata.es" target="_blank" rel="noopener">Linked Open Vocabularies (LOV)</a></td><td>Semantic Web, Linked Data, IoT, geography, government, metadata, and general-purpose vocabularies. Hundreds of vocabularies, many expressed in OWL.</td></tr>
+          <tr><td><a href="http://ontologydesignpatterns.org" target="_blank" rel="noopener">Ontology Design Patterns</a></td><td>Reusable design patterns and small OWL files (for example <code>Airline.owl</code>) that open in Protégé and are easy to adapt.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Biomedical and life sciences</h3>
+      <p>The richest ecosystem of curated ontologies lives in the life sciences:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Repository</th><th>Best for</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://bioportal.bioontology.org" target="_blank" rel="noopener">NCBO BioPortal</a></td><td>One of the largest repositories anywhere: more than 1,200 biomedical, healthcare, biology, and scientific ontologies.</td></tr>
+          <tr><td><a href="https://obofoundry.org" target="_blank" rel="noopener">OBO Foundry</a></td><td>Curated biological and biomedical ontologies, many with a direct <code>.owl</code> download (for example the Relation Ontology, <code>ro.owl</code>).</td></tr>
+          <tr><td><a href="https://www.ebi.ac.uk/ols4" target="_blank" rel="noopener">EMBL-EBI Ontology Lookup Service (OLS)</a></td><td>A large EMBL-EBI repository for searching and browsing ontologies, with links to their upstream OWL files.</td></tr>
+          <tr><td><a href="https://ontobee.org" target="_blank" rel="noopener">Ontobee</a></td><td>An ontology browser and linked-data server for many OBO ontologies, with downloadable OWL/RDF source.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Domain-specific</h3>
+      <p>Specialised repositories for particular fields:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Repository</th><th>Best for</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://agroportal.lirmm.fr" target="_blank" rel="noopener">AgroPortal</a></td><td>Agriculture, food, plants, and environment. Hundreds of resources, many available in OWL.</td></tr>
+          <tr><td><a href="https://earthportal.eu" target="_blank" rel="noopener">EarthPortal</a></td><td>Earth science, climate, geology, geography, atmosphere, and geoscience.</td></tr>
+          <tr><td><a href="https://biodivportal.gfbio.org" target="_blank" rel="noopener">BiodivPortal</a></td><td>Biodiversity and ecology, with downloadable OWL versions on each ontology page.</td></tr>
+          <tr><td><a href="https://matportal.org" target="_blank" rel="noopener">MatPortal</a></td><td>Materials science and engineering.</td></tr>
+        </tbody>
+      </table></div>
+      <p>Not sure where to begin? For general-purpose OWL, start with LOV. For medical or biological domains, start with BioPortal, OBO Foundry, or OLS. Once you have a file in a compatible format, head to <a href="#importing-an-existing-ontology">Importing an existing ontology</a>.</p>
+
+      <h3>Ready-to-import examples</h3>
+      <p>A few small ontologies you can download and import in a single step to try the reasoner right away, without hunting through a repository first.</p>
+
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body">
+          <span class="co-title">Placeholder <span class="ver-badge blue">demo</span></span>
+          The download links below are stubs for now. The hosted files will be wired up here shortly; the layout and workflow are final. Once downloaded, import a file from the <a href="#importing-an-existing-ontology">Importing an existing ontology</a> section below.
+        </div>
+      </div>
+
+      <!-- TODO(vince): replace each href="#" with the real hosted .owl/.owx/.ttl file URL,
+           and update the Ontology / Domain / Format columns to match. Rows are dummy for now. -->
+      <div class="table-wrap"><table>
+        <thead><tr><th>Ontology</th><th>Domain</th><th>Format</th><th>Download</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Beverages</strong> (the demo used throughout these docs)</td>
+            <td>Food and drink</td>
+            <td><code>.owx</code></td>
+            <td><a class="ghost-btn" href="#" data-todo="owl-file"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 12l5 5 5-5M5 21h14"/></svg> Download</a></td>
+          </tr>
+          <tr>
+            <td><strong>Family</strong> (teaching example)</td>
+            <td>Kinship</td>
+            <td><code>.owx</code></td>
+            <td><a class="ghost-btn" href="#" data-todo="owl-file"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 12l5 5 5-5M5 21h14"/></svg> Download</a></td>
+          </tr>
+          <tr>
+            <td><strong>Pizza</strong> (classic OWL tutorial)</td>
+            <td>Teaching</td>
+            <td><code>.owx</code></td>
+            <td><a class="ghost-btn" href="#" data-todo="owl-file"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 12l5 5 5-5M5 21h14"/></svg> Download</a></td>
+          </tr>
+        </tbody>
+      </table></div>
+
+      <h2>Everything is a Term</h2>
+      <p>Under the hood, every name that enters Oxid-DB (a class, an individual, a property, even a literal value) is interned into a dictionary and represented by a single small integer called a <strong>Term</strong> (a <code>u32</code>). All of the engine's internal data structures work on <code>Term</code>s, never on strings, so comparisons are integer comparisons.</p>
+      <p>This is more than a performance trick. Because the ontology, the <a href="vectors.html">vector index</a>, the <a href="documents.html">document store</a>, and the <a href="kge.html">KGE</a> layer all share the <em>same</em> Term dictionary, an individual, its embedding, its document, and its learned link-prediction entity that all denote the same real-world thing are literally the same <code>u32</code>. There is no separate ID space to join across, and no seam to keep in sync between the symbolic and neural halves of the system. When a reasoner-computed class extent is handed to a vector search as a candidate set, it is already the right kind of identifier, with no translation step.</p>
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body"><span class="co-title">Class vs. individual is not a type tag</span>
+        Whether a Term names a class or an individual is not baked into the Term itself: it is membership in the ontology's class set or individual set, maintained as you add axioms. The same identifier space serves both.</div>
+      </div>
+      <p class="src-cite"><span class="src-cite">crates/oxd-core/src/term.rs</span></p>
+
+      <h2>Classes and subclasses</h2>
+      <p>Classes are your categories. You connect them with <strong>subclass</strong> axioms (the IS-A relationship, written <code>⊑</code> in description logic) to form a hierarchy. Declaring <code>Pilsner ⊑ Beer</code> says "every Pilsner is a Beer".</p>
+      <p>Let's build the beverage hierarchy used throughout these docs. We have a top category <code>Beer</code>, with two more specific kinds beneath it (<code>Pilsner</code> and <code>Stout</code>), plus a separate <code>Wine</code> category:</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/subclass \
+  -H 'Content-Type: application/json' \
+  -d '{"sub":"Pilsner","sup":"Beer"}'</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    db.add_subclass("Pilsner", "Beer")
+    db.add_subclass("Stout", "Beer")</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Pilsner ⊑ Beer, Stout ⊑ Beer  (sub is the child, sup the parent)
+await db.addSubclass({ sub: "Pilsner", sup: "Beer" });
+await db.addSubclass({ sub: "Stout", sup: "Beer" });</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>for _, sc := range []oxid.SubclassRequest{
+	{Sub: "Pilsner", Sup: "Beer"},
+	{Sub: "Stout", Sup: "Beer"},
+} {
+	if err := client.AddSubclass(ctx, sc); err != nil {
+		log.Fatalf("subclass %s ⊑ %s: %v", sc.Sub, sc.Sup, err)
+	}
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Pilsner ⊑ Beer  (sub, sup)
+oxid.addSubclass(new Mutation.SubclassRequest("Pilsner", "Beer"));
+oxid.addSubclass(new Mutation.SubclassRequest("Stout", "Beer"));</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>use OxidDb\Client\Model\SubclassRequest;
+
+$oxid-&gt;addSubclass(new SubclassRequest('Beer', 'Beverage'));    // Beer ⊑ Beverage
+$oxid-&gt;addSubclass(new SubclassRequest('Pilsner', 'Beer'));     // Pilsner ⊑ Beer</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Pilsner ⊑ Beer, Stout ⊑ Beer
+await oxid.AddSubclassAsync(new SubclassRequest("Pilsner", "Beer"));
+await oxid.AddSubclassAsync(new SubclassRequest("Stout", "Beer"));</code></pre>
+  </div>
+</div>
+
+      <p>The <code>sub</code> field is the child, <code>sup</code> the parent: <code>{"sub":"Pilsner","sup":"Beer"}</code> reads "Pilsner is a subclass of Beer". You don't have to create <code>Beer</code> as a class first: naming it in an axiom introduces it. Adding the axiom returns <code>{"ok": true}</code>.</p>
+      <p>Subclass is <strong>transitive</strong>. If you later add <code>Beer ⊑ Beverage</code>, then a <code>Pilsner</code> is entailed to be a <code>Beverage</code> too, even though you never said so directly. This is why an <a href="oxql.html">OxQL</a> query for <code>?x IS-A Beer</code> returns members of <code>Pilsner</code> and <code>Stout</code> as well: class membership follows the whole hierarchy. The mechanics of that closure live on the <a href="reasoning.html">Reasoning</a> page.</p>
+
+      <h2>Disjointness</h2>
+      <p>A subclass axiom says two classes overlap. A <strong>disjointness</strong> axiom says the opposite: two classes can share <em>no</em> members. In the beverage domain, nothing is both a <code>Beer</code> and a <code>Wine</code>:</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/disjoint \
+  -H 'Content-Type: application/json' \
+  -d '{"a":"Beer","b":"Wine"}'</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    db.add_disjoint("Beer", "Wine")</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Nothing is both a Beer and a Wine.
+await db.addDisjoint({ a: "Beer", b: "Wine" });</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Beer and Wine are disjoint: nothing can be both.
+if err := client.AddDisjoint(ctx, oxid.DisjointRequest{A: "Beer", B: "Wine"}); err != nil {
+	log.Fatalf("disjoint: %v", err)
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Beer and Wine are disjoint
+oxid.addDisjoint(new Mutation.DisjointRequest("Beer", "Wine"));</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>use OxidDb\Client\Model\DisjointRequest;
+
+$oxid-&gt;addDisjoint(new DisjointRequest('Beer', 'Wine'));   // POST /disjoint: Beer ⊓ Wine = ⊥</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// A beverage cannot be both a Beer and a Wine.
+await oxid.AddDisjointAsync(new DisjointRequest("Beer", "Wine"));</code></pre>
+  </div>
+</div>
+
+      <p>Note the field names are <code>a</code> and <code>b</code>: the order does not matter, disjointness is symmetric. Internally the axiom is encoded as <code>Beer ⊓ Wine ⊑ ⊥</code>: "the things that are both Beer and Wine are exactly the things in the empty class (<code>⊥</code>, <code>owl:Nothing</code>)".</p>
+      <p>Why bother? Disjointness is what turns the reasoner into a data-integrity guard. Suppose <code>Stout ⊑ Beer</code> and some grape variety <code>Merlot ⊑ Wine</code>. If a bad import asserts that one individual is <em>both</em> a <code>Stout</code> and a <code>Merlot</code>, it is transitively both a <code>Beer</code> and a <code>Wine</code>, which the disjointness axiom forbids. The reasoner detects the contradiction and reports the ontology as <strong>inconsistent</strong>, rather than silently accepting the bad fact. That check, and the difference between an inconsistent ontology and an <em>incoherent</em> one (a class that can never have members), is covered under <a href="reasoning.html#consistency-disjointness">consistency &amp; disjointness on the Reasoning page</a>.</p>
+
+      <h2>Individuals</h2>
+      <p>Classes describe categories; <strong>individuals</strong> are the concrete entities that belong to them. You create an individual by inserting it with the class it is a member of. An individual can also carry a <strong>vector</strong> (an embedding) and, through the compound-write endpoint, <strong>data properties</strong>, so the same entity is visible to both the reasoner and vector search.</p>
+      <p>Here we insert <code>Heineken</code> as a <code>Pilsner</code>, giving it a 4-dimensional toy vector so it lands in the default vector collection too:</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/insert \
+  -H 'Content-Type: application/json' \
+  -d '{"iri":"Heineken","class":"Lager","vector":[0.6,0.3,0.1,0.6]}'</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    res = db.insert("Heineken", "Pilsner", vector=[0.4, 0.2, 0.1, 0.4])
+    # res: {"iri": "Heineken", ...}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Identity is `individual` (or alias `iri`); membership is `class` (or `classes[]`).
+await db.insert({ individual: "Heineken", class: "Pilsner", vector: [0.4, 0.2, 0.1, 0.4] });
+await db.insert({ iri: "Guinness", class: "Stout", vector: [0.9, 0.3, 0.0, 0.7] });</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>res, err := client.Insert(ctx, oxid.InsertRequest{
+	Individual: "PilsnerUrquell",
+	Class:      "Pilsner",
+	Vector:     []float64{0.9, 0.1, 0.0, 0.2}, // 4-dim
+})
+if err != nil {
+	log.Fatalf("insert: %v", err)
+}
+_ = res</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Simple: individual + single class (no vector)
+oxid.insert(Mutation.InsertRequest.of("Heineken", "Pilsner"));
+
+// Full form: individual + class + 4-dim vector into a named collection
+oxid.insert(new Mutation.InsertRequest(
+        "Guinness", null, "Stout", null, null,
+        new double[] {0.1, 0.2, 0.3, 0.4}, "beverages"));</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>use OxidDb\Client\Model\InsertRequest;
+
+$res = $oxid-&gt;insert(new InsertRequest(
+    'Heineken',
+    'Pilsner',
+    vector: [0.6, 0.3, 0.1, 0.6],
+    collection: 'demo_beers',
+));
+echo $res-&gt;ok ? "inserted\n" : "failed\n";</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Positional (single class): emits {"individual","class",...}
+OkResponse ok = await oxid.InsertAsync(new InsertRequest(
+    "Heineken", "Pilsner",
+    Vector: new[] { 0.9, 0.1, 0.5, 0.2 }));
+
+// Multi-class via the aliases: emits {"iri","classes":[...]}
+await oxid.InsertAsync(new InsertRequest(
+    Individual: null, Class: null,
+    Iri: "Guinness", Classes: new List&lt;string&gt; { "Stout" },
+    Vector: new[] { 0.1, 0.8, 0.3, 0.4 }));</code></pre>
+  </div>
+</div>
+
+      <p>The identity field on the wire is <code>iri</code> (the legacy alias <code>individual</code> also deserializes). Set <code>class</code> for a single class or <code>classes</code> for several, not both. You state only what you know: asserting <code>Heineken : Pilsner</code> stores exactly that one fact, plus the optional vector. After classification, the reasoner fills in the rest: <code>Heineken</code> is inferred to be a <code>Beer</code> (and any further superclasses) because <code>Pilsner ⊑ Beer</code>.</p>
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body"><span class="co-title"><code>/insert</code> is deliberately narrow</span>
+        <code>POST /insert</code> writes exactly an IRI, its class(es), and an optional vector or text. If you send <code>properties</code>, <code>label</code>, or <code>annotations</code> it returns a loud <code>400</code> and points you at <code>POST /entities</code>, the compound-write endpoint that stores classes, data/object properties, and a vector in one transaction.</div>
+      </div>
+
+      <h2>Equivalence &amp; other axioms</h2>
+      <p>Subclass, disjointness, and class assertion cover the great majority of real modelling. The native model supports a few more axiom shapes, and (because Oxid-DB targets a tractable logic) deliberately leaves some rich OWL constructs out. It is worth knowing exactly where the line is.</p>
+      <p>What the native ontology model represents (its class-expression language) is exactly five shapes: a named class, <code>⊤</code> (<code>owl:Thing</code>, the class of everything), <code>⊥</code> (<code>owl:Nothing</code>, the empty class), conjunction <code>⊓</code> ("things that are both A and B"), and existential restriction <code>∃r.C</code> ("things related by <code>r</code> to some C"). Everything you assert is built from those.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Axiom</th><th>Supported?</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>SubClassOf (<code>A ⊑ B</code>)</td><td>Yes</td><td>The IS-A backbone; transitive.</td></tr>
+          <tr><td>DisjointClasses</td><td>Yes</td><td>Encoded pairwise as <code>A ⊓ B ⊑ ⊥</code>.</td></tr>
+          <tr><td>EquivalentClasses (<code>A ≡ B</code>)</td><td>Yes, desugared</td><td>Stored as two SubClassOf edges (<code>A ⊑ B</code> and <code>B ⊑ A</code>); there is no separate equivalence relation at the storage layer.</td></tr>
+          <tr><td>Class / property assertions (ABox)</td><td>Yes</td><td>Individuals typed into classes; object- and data-property facts.</td></tr>
+          <tr><td>Sub-property (<code>SubObjectPropertyOf</code>, single)</td><td>Yes</td><td>Role hierarchy is reasoned via the reasoner's CR7 rule. Authorable live via <code>POST /actions/add-axiom</code> kind <code>"subproperty"</code>.</td></tr>
+          <tr><td>Length-2 property chains / transitivity</td><td>Yes</td><td>Reasoned by default via CR8 as of 0.9.7 (<code>r∘s ⊑ t</code>; <code>Trans(r)</code> desugars to <code>r∘r ⊑ r</code>). Opt out with <code>OXD_REASONER_ROLE_CHAINS=0</code>.</td></tr>
+          <tr><td>Length-3+ property chains</td><td>No</td><td>Chains of length 3 or longer are stored but inert, still fenced off. Flagged loudly on import, never silently dropped.</td></tr>
+          <tr><td><code>ObjectPropertyDomain</code></td><td>Yes</td><td>Reasoned as <code>∃r.⊤ ⊑ C</code> as of 0.9.7. Role <em>range</em> restrictions remain excluded.</td></tr>
+          <tr><td>Union, complement/negation, universal (<code>∀</code>), cardinality, nominals (<code>oneOf</code>)</td><td>No</td><td>Outside the EL profile; collapsed or dropped at import time (and counted).</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>On equivalence and "defined classes":</strong> because <code>A ≡ B</code> is just stored as two subclass edges, simple equivalences work well. Fully <em>defined</em> classes (where a class is declared equivalent to a complex expression, e.g. "a Stout is exactly a Beer that is dark and roasted") are where the honesty caveat lives. The reasoner's normalizer handles many such definitions, but the completeness audit records residual gaps in complex definitional equivalence and some ABox rules. Model with subclass and disjointness where you can; treat complex defined-class inference as best-effort rather than guaranteed, and see the <a href="reasoning.html">Reasoning</a> page for exactly which inferences you get.</p>
+      <div class="callout warn">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+        <div class="co-body"><span class="co-title">EL⊥, not full OWL 2</span>
+        Oxid-DB's reasoner is <strong>OWL 2 EL with ⊥</strong>: a tractable (PTIME) subset of OWL 2, not the full language. This is a deliberate trade: guaranteed fast classification in exchange for omitting constructs like negation, universal restrictions, and cardinality. For catalogs, taxonomies, and terminologies it is more than enough; if you need those richer constructs, know that they are collapsed on import.</div>
+      </div>
+      <p class="src-cite"><span class="src-cite">crates/oxd-core/src/ontology.rs</span></p>
+
+      <h3>Adding a role hierarchy (sub-property) axiom</h3>
+      <p>Subclass and disjointness have their own endpoints (<code>/subclass</code>, <code>/disjoint</code>). Richer axioms go through the governed <code>POST /actions/add-axiom</code>, which as of 0.9.7 accepts a <code>&quot;subproperty&quot;</code> kind (a length-1 role hierarchy edge) alongside the existing <code>&quot;subclass&quot;</code>, <code>&quot;disjoint&quot;</code>, and <code>&quot;equivalent&quot;</code> kinds. A sub-property edge is reasoned by the <a href="reasoning.html">reasoner</a>&rsquo;s CR7 rule, so a fact asserted along the sub-property counts along its super-property.</p>
+      <div class="code-block">
+        <div class="code-head"><span class="lang">json</span><button class="copy-btn">Copy</button></div>
+        <pre><code>{ "kind": "subproperty", "sub": "https://ex.org/prop/brewedBy", "sup": "https://ex.org/prop/producedBy" }</code></pre>
+      </div>
+      <p>Because it is a <strong>governed write</strong>, the axiom commits only if the ontology stays coherent; otherwise the endpoint returns the EL&perp; verdict without mutating anything. Role <strong>chains</strong> are not authorable through this action, author chain axioms via <a href="#importing-an-existing-ontology">file import</a>. The same capability is mirrored in the SDKs (Node <code>AddAxiomRequest</code> with <code>kind</code>&nbsp;<code>&quot;subproperty&quot;</code>; PHP <code>AddAxiomRequest::subproperty($sub, $sup)</code>) and the MCP <code>add_axiom</code> tool, and role axioms now round-trip through OKF export under the <code>x-oxid-role-axioms</code> key.</p>
+
+      <h2>Importing an existing ontology</h2>
+      <p>You rarely start from a blank slate. If you already have an ontology as an OWL file, or your data as a CSV, you can load it in one call rather than asserting axiom by axiom.</p>
+
+      <h3>From OWL</h3>
+      <p><code>POST /import/owl</code> takes the raw ontology bytes as the request body. As of 0.9.7 it reads six syntaxes: OWL/XML (<code>.owl</code>/<code>.owx</code>/<code>.xml</code>), OWL Functional Syntax (<code>.ofn</code>), OBO&nbsp;1.4 (<code>.obo</code>, the bio-ontology format behind GO, DOID, and Uberon), OWL Manchester Syntax (<code>.omn</code>), RDF Turtle (<code>.ttl</code>), and N-Triples (<code>.nt</code>). The server detects the format by file extension, then by sniffing the content; pass <code>?format=</code> to force it (<code>owx</code>&nbsp;|&nbsp;<code>owl</code>&nbsp;|&nbsp;<code>xml</code>, <code>ofn</code>, <code>obo</code>, <code>omn</code>, <code>ttl</code>, <code>nt</code>). An unknown <code>?format=</code> value returns a <code>400</code>. Every format flows through the same EL&perp; mapping, so the response reports what was added (classes, individuals, axioms, edges) plus anything skipped, with warnings.</p>
+      <div class="callout warn">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+        <div class="co-body"><span class="co-title">RDF/XML is not accepted</span>
+        <code>/import/owl</code> rejects RDF/XML with a <code>400</code>. Use one of the supported syntaxes: OWL/XML (<code>owx</code>), Functional (<code>ofn</code>), OBO, Manchester (<code>omn</code>), Turtle (<code>ttl</code>), or N-Triples (<code>nt</code>). Some of the SDK snippets below pass an RDF/XML string for brevity; substitute a supported serialization when you run them against a live server.</div>
+      </div>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code># Raw OWL bytes as the body. RDF/XML is NOT accepted: use owx/ofn/obo/omn/ttl/nt.
+curl -s -X POST 'https://85cfad134a4a.oxid-db.com/import/owl?format=owx' \
+  -H 'Content-Type: application/octet-stream' \
+  --data-binary @beverages.owx</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    owl = open("beverages.owx").read()
+    res = db.import_owl(owl)
+    # res: {"ok": true, "classes_added": .., "individuals_added": .., ...}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>import { readFile } from "node:fs/promises";
+
+const owl = await readFile("beverages.owl", "utf8");
+const res = await db.importOwl(owl);
+console.log(res.ok, res.classes_added, res.axioms_added);</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>owl := `&lt;?xml version="1.0"?&gt;
+&lt;rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"&gt;
+  &lt;owl:Class rdf:about="Beer"/&gt;
+  &lt;owl:Class rdf:about="Pilsner"&gt;
+    &lt;rdfs:subClassOf rdf:resource="Beer"/&gt;
+  &lt;/owl:Class&gt;
+&lt;/rdf:RDF&gt;`
+
+res, err := client.ImportOWL(ctx, owl)
+if err != nil {
+	log.Fatalf("import owl: %v", err)
+}
+log.Printf("ok=%v classes_added=%d axioms_added=%d warnings=%v",
+	res.Ok, res.ClassesAdded, res.AxiomsAdded, res.Warnings)</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>String owlRdfXml = """
+    &lt;rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+             xmlns:owl="http://www.w3.org/2002/07/owl#"&gt;
+      &lt;owl:Class rdf:about="Beer"/&gt;
+      &lt;owl:Class rdf:about="Pilsner"&gt;&lt;rdfs:subClassOf rdf:resource="Beer"/&gt;&lt;/owl:Class&gt;
+    &lt;/rdf:RDF&gt;
+    """;
+Ops.ImportResponse res = oxid.importOwl(owlRdfXml);
+System.out.println(res.classesAdded() + " classes, " + res.axiomsAdded() + " axioms");</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>$owl = file_get_contents('beverages.owl');       // raw RDF/XML string
+$res = $oxid-&gt;importOwl($owl);
+printf("ok=%s classes=%d individuals=%d axioms=%d\n",
+    $res-&gt;ok ? 'true' : 'false',
+    $res-&gt;classesAdded, $res-&gt;individualsAdded, $res-&gt;axiomsAdded);</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>string owl = await File.ReadAllTextAsync("beverages.owl"); // RDF/XML
+ImportResponse res = await oxid.ImportOwlAsync(owl);
+Console.WriteLine($"classes+={res.ClassesAdded} individuals+={res.IndividualsAdded} " +
+                  $"axioms+={res.AxiomsAdded}");</code></pre>
+  </div>
+</div>
+
+      <p>Axioms outside the EL profile are collapsed or skipped during import, and every skip is counted and surfaced in the <code>warnings</code> list, never dropped silently.</p>
+
+      <h3>From CSV</h3>
+      <p><code>POST /import/csv</code> takes raw CSV text and is the quickest way to seed a small ontology from a spreadsheet, for example an <code>iri,class</code> table that types individuals into classes:</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/import/csv \
+  -H 'Content-Type: text/csv; charset=utf-8' \
+  --data-binary $'iri,class\nHeineken,Pilsner\nGuinness,Stout\n'</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    csv = "iri,class\nHeineken,Pilsner\nGuinness,Stout\n"
+    res = db.import_csv(csv)
+    # res: {"ok": true, "classes_added": .., "individuals_added": .., ...}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>const csv =
+  "subject,predicate,object\n" +
+  "Pilsner,subClassOf,Beer\n" +
+  "Stout,subClassOf,Beer\n";
+const res = await db.importCsv(csv);
+console.log(res.ok, res.classes_added, res.axioms_added);</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>csv := "individual,class,abv\n" +
+	"PilsnerUrquell,Pilsner,4.4\n" +
+	"Guinness,Stout,4.2\n" +
+	"Chardonnay,Wine,13.5\n"
+
+res, err := client.ImportCSV(ctx, csv)
+if err != nil {
+	log.Fatalf("import csv: %v", err)
+}
+log.Printf("ok=%v classes_added=%d individuals_added=%d",
+	res.Ok, res.ClassesAdded, res.IndividualsAdded)</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>String csv = String.join("\n",
+        "individual,class,abv",
+        "Heineken,Pilsner,5.0",
+        "Guinness,Stout,4.2",
+        "Cabernet,Wine,13.5");
+Ops.ImportResponse res = oxid.importCsv(csv);
+System.out.println(res.individualsAdded() + " individuals imported");</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>$csv = &lt;&lt;&lt;CSV
+individual,class
+Heineken,Pilsner
+Guinness,Stout
+Merlot,Wine
+CSV;
+
+$res = $oxid-&gt;importCsv($csv);
+printf("ok=%s classes=%d individuals=%d axioms=%d\n",
+    $res-&gt;ok ? 'true' : 'false',
+    $res-&gt;classesAdded, $res-&gt;individualsAdded, $res-&gt;axiomsAdded);</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>string csv =
+    "individual,class\n" +
+    "Heineken,Pilsner\n" +
+    "Guinness,Stout\n";
+ImportResponse res = await oxid.ImportCsvAsync(csv);
+Console.WriteLine($"individuals+={res.IndividualsAdded} axioms+={res.AxiomsAdded}");</code></pre>
+  </div>
+</div>
+
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body"><span class="co-title">Loading OWL from the CLI is managed</span>
+        Bulk-loading a large ontology at startup, or via the <code>oxd</code> command-line tools, is part of the runtime that is managed for you while Oxid-DB is closed-source. From your application, use the HTTP import endpoints above. See <a href="access.html">Access &amp; Hosting</a> and <a href="operations.html">Operations</a>.</div>
+      </div>
+
+      <h2>Where to go next</h2>
+      <p>You now have classes, a hierarchy, disjointness, and typed individuals. The next steps turn that model into answers.</p>
+      <div class="grid">
+        <a class="card" href="reasoning.html">
+          <h3>Reasoning (OWL 2 EL⊥) <span class="chip symbolic">Symbolic</span></h3>
+          <p>How classification computes inferred class memberships, and how disjointness surfaces as an inconsistency or an unsatisfiable class.</p>
+        </a>
+        <a class="card" href="documents.html">
+          <h3>Document Store</h3>
+          <p>Push JSON documents into collections: the schemaless, high-throughput side of the data model.</p>
+        </a>
+        <a class="card" href="ontology-bridge.html">
+          <h3>The Ontology Bridge</h3>
+          <p>Map a document collection to a class so every inserted JSON document automatically becomes a typed individual: the seam between documents and the ontology.</p>
+        </a>
+      </div>
+
+      <div class="pager">
+        <a href="access.html"><span class="dir">← Previous</span><span class="ttl">Access &amp; Hosting</span></a>
+        <a class="next" href="reasoning.html"><span class="dir">Next →</span><span class="ttl">Reasoning (OWL 2 EL⊥)</span></a>
+      </div>
+
+      <div class="article-footer">
+        <button class="ghost-btn" id="copyMarkdown">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy page as Markdown
+        </button>
+        <div class="spacer"></div>
+        <span>Oxid-DB 0.9.7 · Built with Rust</span>
+      </div>
+    </main>
+
+    <!-- ============================ TOC (auto-filled by docs.js) -->
+    <aside class="toc" aria-label="On this page">
+      <div class="toc-title">On this page</div>
+      <nav id="tocNav"></nav>
+    </aside>
+  </div>
+
+  <!-- ==================================================== SITE FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="Oxid-DB home">
+          <svg class="logo-svg" style="height:28px" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <g>
+              <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+              <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+              <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+              <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+              <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+              <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+              <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+              <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+              <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+              <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+            </g>
+          </svg>
+        </a>
+        <p>A Rust engine that unifies ontology reasoning and vector search in one system.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Docs</h4>
+          <a href="quickstart.html">Quick Start</a>
+          <a href="oxql.html">OxQL</a>
+          <a href="api.html">HTTP API</a>
+          <a href="sdks.html">SDKs</a>
+        </div>
+        <div class="footer-col">
+          <h4>Concepts</h4>
+          <a href="ontologies.html">Ontologies</a>
+          <a href="vectors.html">Vectors</a>
+          <a href="hybrid-queries.html">Hybrid Queries</a>
+          <a href="kge.html">Link Prediction</a>
+        </div>
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="access.html">Access &amp; Hosting</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="storage.html">Storage</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Oxid-DB · Documentation v0.9.7</div>
+  </footer>
+
+  <!-- ==================================================== SEARCH MODAL -->
+  <div class="overlay" id="searchOverlay">
+    <div class="search-modal" role="dialog" aria-modal="true" aria-label="Search documentation">
+      <div class="search-input-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Search documentation…" autocomplete="off" spellcheck="false" />
+        <span class="kbd" style="font-family:var(--font-mono);font-size:11px;border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--muted)">Esc</span>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+      <div class="search-foot">
+        <span><span class="kbd">↑</span> <span class="kbd">↓</span> navigate</span>
+        <span><span class="kbd">↵</span> open</span>
+        <span><span class="kbd">esc</span> close</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/highlight.min.js" defer></script>
+  <script src="assets/docs.js" defer></script>
+</body>
+</html>

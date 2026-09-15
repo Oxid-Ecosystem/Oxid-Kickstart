@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scoring &amp; Ranking: Oxid-DB Documentation (0.9.8)</title>
+  <meta name="description" content="How Oxid-DB scores and orders /query results: similarity scores per metric, the wire's IRI / score-then-IRI ordering, the SORT-over-HTTP no-op, hybrid ranking, and LIMIT pagination." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="mask-icon" href="favicon.svg" color="#143f61" />
+
+  <!-- Prevent theme flash: apply stored theme before first paint -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('oxid-theme') || 'system';
+        var resolved = stored === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : stored;
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme-pref', stored);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+
+  <!-- ==================================================== HEADER -->
+  <header class="header">
+    <button class="icon-btn hamburger" id="hamburger" aria-label="Open navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <a class="brand" href="index.html" aria-label="Oxid-DB documentation home">
+      <svg class="logo-svg" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <g>
+          <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+          <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+          <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+          <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+          <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+          <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+          <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+          <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+          <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+          <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+        </g>
+      </svg>
+      <span class="brand-sub">Docs</span>
+    </a>
+
+    <div class="header-spacer"></div>
+
+    <button class="search-trigger" id="searchTrigger" aria-label="Search documentation">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <span class="st-label">Search documentation…</span>
+      <span class="kbd">/</span>
+    </button>
+
+    <div class="dropdown-wrap">
+      <button class="ctrl" id="versionBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="ctrl-label">Version</span>
+        <strong style="color:var(--text)">0.9.8</strong>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="dropdown" id="versionMenu" role="menu">
+        <a class="dropdown-item" href="../0.9.8/index.html" aria-current="true">0.9.8 <span class="tag current">Current</span></a>
+        <a class="dropdown-item" href="../0.9.7/index.html">0.9.7 <span class="tag maintained">Previous</span></a>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme" aria-haspopup="true" aria-expanded="false">
+        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
+      </button>
+      <div class="dropdown" id="themeMenu" role="menu">
+        <button class="dropdown-item" data-theme-set="light">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          Light <span class="check" data-check="light">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="dark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          Dark <span class="check" data-check="dark">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="system">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          System <span class="check" data-check="system">✓</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- ==================================================== SHELL -->
+  <div class="shell">
+
+    <div class="version-banner">
+      <span class="dot">●</span>
+      <span>You're reading the docs for <strong>Oxid-DB 0.9.8</strong>, the current release. Older versions are available from the version selector.</span>
+    </div>
+
+    <!-- ============================ SHARED SIDEBAR (do not edit per-page; docs.js marks the active link) -->
+    <nav class="sidebar" id="sidebar" aria-label="Documentation">
+      <div class="nav-group">
+        <div class="nav-group-label">Getting Started</div>
+        <a class="nav-item" href="index.html">Introduction</a>
+        <a class="nav-item" href="quickstart.html">Quick Start</a>
+        <a class="nav-item" href="access.html">Access &amp; Hosting</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Core Concepts</div>
+        <a class="nav-item" href="ontologies.html">Ontologies</a>
+        <a class="nav-item" href="reasoning.html">Reasoning (OWL 2 EL&perp;)</a>
+        <a class="nav-item" href="vectors.html">Vector Search</a>
+        <a class="nav-item" href="hybrid-queries.html">Hybrid Queries <span class="badge">core</span></a>
+        <a class="nav-item" href="scoring.html">Scoring &amp; Ranking</a>
+        <a class="nav-item" href="kge.html">Link Prediction (KGE)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">OxQL Query Language</div>
+        <a class="nav-item" href="oxql.html">OxQL Overview</a>
+        <a class="nav-item" href="documents-queries.html">Querying Documents</a>
+        <a class="nav-item" href="aggregation.html">Aggregation</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Document Store</div>
+        <a class="nav-item" href="documents.html">Overview</a>
+        <a class="nav-item" href="documents-insert.html">Inserting &amp; Bulk Loading</a>
+        <a class="nav-item" href="documents-indexing.html">Indexing &amp; Schema</a>
+        <a class="nav-item" href="ontology-bridge.html">The Ontology Bridge</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Server &amp; SDKs</div>
+        <a class="nav-item" href="api.html">HTTP API</a>
+        <a class="nav-item" href="sdks.html">SDKs &amp; Clients</a>
+        <a class="nav-item" href="transactions.html">Transactions</a>
+        <a class="nav-item" href="mcp.html">MCP Integration</a>
+        <a class="nav-item" href="web-ui.html">Web UI</a>
+        <a class="nav-item" href="authentication.html">Authentication</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Operations</div>
+        <a class="nav-item" href="operations.html">Install, CLI &amp; Settings</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Architecture</div>
+        <a class="nav-item" href="architecture.html">System Design</a>
+        <a class="nav-item" href="storage.html">Storage &amp; Durability</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Reference</div>
+        <a class="nav-item" href="changelog.html">Changelog</a>
+      </div>
+    </nav>
+
+    <!-- ============================ ARTICLE: the ONLY region a page fills -->
+    <main class="article">
+      <div class="breadcrumb"><a href="index.html">Docs</a> / Core Concepts / <span>Scoring &amp; Ranking</span></div>
+
+      <h1>Scoring &amp; Ranking</h1>
+      <p class="lead">How Oxid-DB turns "which of these is the best match?" into a number and, just as important, what order those matches come back in over the wire. This page covers the <code>score</code> field, the ordering the HTTP <code>/query</code> path actually guarantees, the one big <code>SORT</code> gotcha, how hybrid queries rank, and how to page results with <code>LIMIT</code>.</p>
+
+      <h2>What a score means</h2>
+      <p>Every vector metric in Oxid-DB reduces two embeddings to a single <strong>distance</strong>, and the convention is uniform: <strong>lower distance means more similar</strong>. There are four metrics, chosen per collection at creation time (default <code>cosine</code>):</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Metric</th><th>Wire name</th><th>Measures</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Cosine <span class="chip neural">default</span></td><td><code>cosine</code></td><td>Direction only (magnitude ignored); vectors normalized before search. The standard choice for text/sentence embeddings.</td></tr>
+            <tr><td>Euclidean (squared)</td><td><code>l2</code></td><td>Straight-line distance, <em>squared</em> (no final square root). Same ranking as true Euclidean; absolute numbers differ from engines that root it.</td></tr>
+            <tr><td>Inner product</td><td><code>ip</code></td><td>Negated dot product, so "lower = more similar" still holds. For pre-normalized or deliberately-magnitude-carrying vectors.</td></tr>
+            <tr><td>Manhattan / L1</td><td><code>manhattan</code></td><td>Sum of absolute per-dimension differences. Less dominated by a single outlier dimension than L2.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>When a query includes a vector stage (<code>NEAR</code>), each result row carries a <code>score</code>. In the <code>/query</code> response and the <code>/individuals/{iri}/similar</code> response the <code>score</code> is presented as a <strong>similarity</strong> where <em>higher is better</em>. For the by-reference similar endpoint it is exactly <code>1.0 − distance</code>, rounded to three decimals, and the query entity itself is excluded from its own neighbours.</p>
+
+      <p>Run a <code>NEAR</code> query and look at the two fields that matter: <code>iri</code> (always present) and <code>score</code> (present on vector/hybrid rows):</p>
+
+      <div class="code-tabs" data-tabs>
+        <div class="code-tabs-bar" role="tablist">
+          <button class="code-tab" data-lang="curl">cURL</button>
+          <button class="code-tab" data-lang="python">Python</button>
+          <button class="code-tab" data-lang="typescript">TypeScript</button>
+          <button class="code-tab" data-lang="go">Go</button>
+          <button class="code-tab" data-lang="java">Java</button>
+          <button class="code-tab" data-lang="php">PHP</button>
+          <button class="code-tab" data-lang="csharp">C#</button>
+        </div>
+        <div class="code-panel" data-lang="curl">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/query \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"FIND ?x WHERE ?x IS-A Beer AND NEAR ?x TO [0.9,0.1,0.5,0.7] LIMIT 5"}'</code></pre>
+        </div>
+        <div class="code-panel" data-lang="python">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    # literal query vector (dims must match the collection)
+    hits = db.query("FIND ?x WHERE NEAR ?x TO [0.4, 0.2, 0.1, 0.4] LIMIT 5")
+    for h in hits.get("results", []):
+        print(h["iri"], h.get("score"))
+
+    # nearest neighbours of an existing individual
+    sim = db.individual_similar("Heineken", k=3, collection="default")
+    print([h["iri"] for h in sim.get("results", [])])</code></pre>
+        </div>
+        <div class="code-panel" data-lang="typescript">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>// 1) OxQL NEAR over /query - hybrid-capable (combine with IS-A). Rows carry `score`.
+const near = await db.query({
+  query: "FIND ?x WHERE ?x IS-A Beer AND NEAR ?x TO [0.9, 0.1, 0.5, 0.7] LIMIT 5",
+});
+for (const hit of near.results) console.log(hit.iri, hit.score);
+
+// 2) By reference individual - top-k neighbors of an existing IRI.
+const sim = await db.individualSimilar("Guinness", { k: 3, collection: "default" });
+for (const hit of sim.results) console.log(hit.iri, hit.score);</code></pre>
+        </div>
+        <div class="code-panel" data-lang="go">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>// Hybrid: Beers nearest a 4-dim probe vector, top 5.
+oxql := oxid.NewQueryBuilder().
+	Find("x").
+	IsA("Beer").
+	Near([]float64{0.9, 0.1, 0.0, 0.2}).
+	Limit(5).
+	ToOxql()
+res, err := client.Query(ctx, oxid.QueryRequest{Query: oxql})
+if err != nil {
+	log.Fatalf("vector search: %v", err)
+}
+for _, hit := range res.Results {
+	if hit.Score != nil {
+		log.Printf("%s score=%.4f", hit.IRI, *hit.Score)
+	}
+}</code></pre>
+        </div>
+        <div class="code-panel" data-lang="java">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>// By raw vector - via OxQL NEAR; each row exposes iri() and score()
+String oxql = new QueryBuilder()
+        .find("x").isA("Beer")
+        .near(new double[] {0.9, 0.1, 0.5, 0.2})
+        .limit(5)
+        .toOxql();
+Query.QueryResponse hits = oxid.query(Query.QueryRequest.of(oxql));
+for (Query.QueryHit hit : hits.results()) {
+    System.out.println(hit.iri() + " " + hit.score());
+}</code></pre>
+        </div>
+        <div class="code-panel" data-lang="php">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>use OxidDb\Client\Model\QueryRequest;
+
+// OxQL NEAR over POST /query - literal query vector, hybrid-capable.
+$near = $oxid-&gt;query(new QueryRequest(
+    'FIND ?x WHERE ?x IS-A Beer AND NEAR ?x TO [0.9, 0.1, 0.5, 0.2] LIMIT 5'
+));
+foreach ($near-&gt;results as $hit) {
+    printf("  %s  score=%s\n", $hit-&gt;iri, $hit-&gt;score);
+}</code></pre>
+        </div>
+        <div class="code-panel" data-lang="csharp">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>// Hybrid: a Beer near this 4-dim probe vector, top 5.
+string oxql = new QueryBuilder()
+    .Find("x").IsA("Beer").Near(new[] { 0.9, 0.1, 0.5, 0.2 }).Limit(5)
+    .ToOxql();
+QueryResponse hits = await oxid.QueryAsync(new QueryRequest(oxql));
+foreach (QueryHit hit in hits.Results)
+{
+    Console.WriteLine($"{hit.Iri}  score={hit.Score}");
+}</code></pre>
+        </div>
+      </div>
+
+      <p>A NEAR/hybrid row looks like this on the wire (the fixture <code>query_response_basic.json</code> shows the IRI-only shape; a vector stage adds <code>score</code>):</p>
+      <div class="code-block">
+        <div class="code-head"><span class="lang">json</span><button class="copy-btn">Copy</button></div>
+        <pre><code>{
+  "results": [
+    { "iri": "Heineken",  "score": 0.991 },
+    { "iri": "BudLight",  "score": 0.990 }
+  ],
+  "total_count": 2,
+  "next_cursor": "eyJ0ZXJtIjoi..."
+}</code></pre>
+      </div>
+      <p>Two more optional fields can appear on a row: <code>fields</code> (an object) is added when the query uses <code>PROJECT</code> to return selected document fields, and <code>elapsed_micros</code> may appear at the top level (clients ignore it). A pure ontology query (no <code>NEAR</code>) returns IRI-only rows with <strong>no <code>score</code></strong> at all.</p>
+      <div class="callout note"><svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body"><span class="co-title">Note</span> <code>total_count</code> is the number of rows <strong>in this page</strong>, not the total number of matches across all pages. Don't treat it as a corpus-wide count.</div></div>
+
+      <h2>Result ordering</h2>
+      <p>Because your first instinct is usually "sort it in the query," it's worth being blunt about what the HTTP <code>/query</code> path actually guarantees for row order:</p>
+      <dl class="kv">
+        <dt>Pure ontology results (e.g. <code>IS-A</code>, relation filters, no <code>NEAR</code>)</dt>
+        <dd>Rows have no score and are returned in <strong>IRI order</strong> (a stable, deterministic ordering by the interned term). This is what the SDK contract pins its comparisons against.</dd>
+        <dt>Vector / hybrid results (any query with a <code>NEAR</code> stage)</dt>
+        <dd>Rows are ordered by <strong>score, then IRI</strong>: best similarity first, with IRI as the deterministic tie-break so equal-score rows never shuffle between calls.</dd>
+      </dl>
+      <p>That is the whole contract: <strong>IRI order, or score-then-IRI order for vector/hybrid queries.</strong> There is no third ordering. In particular, an OxQL <code>SORT</code> clause does not change it, which is the gotcha below.</p>
+
+      <h2>The SORT gotcha</h2>
+      <div class="callout warn"><svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+        <div class="co-body"><span class="co-title">SORT is a no-op over HTTP</span> OxQL accepts a <code>SORT &lt;field&gt; [ASC|DESC]</code> clause and it parses cleanly, but it <strong>does not order the JSON returned by <code>POST /query</code></strong>. The wire order is IRI (or score-then-IRI for <code>NEAR</code>/hybrid), full stop. Adding <code>SORT abv DESC</code> to a query will <em>not</em> give you results sorted by <code>abv</code> over HTTP. To order by an arbitrary field, sort the returned rows <strong>client-side</strong>, or rely on the built-in <code>score</code> / <code>NEAR</code> ranking. This is the single biggest surprise on this page; see the <span class="src-cite">sdk/_contract/README.md</span> ordering contract.</div></div>
+      <p>Here is a query that <em>looks</em> like it sorts, and what actually happens:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="lang">oxql</span><button class="copy-btn">Copy</button></div>
+        <pre><code><span class="tok-kw">FIND</span> <span class="tok-var">?x</span> <span class="tok-kw">FROM</span> beers <span class="tok-kw">WHERE</span> <span class="tok-var">?x</span>.abv <span class="tok-kw">&gt;</span> <span class="tok-num">0.5</span> <span class="tok-kw">PROJECT</span> name, abv <span class="tok-kw">SORT</span> abv <span class="tok-kw">DESC</span> <span class="tok-kw">LIMIT</span> <span class="tok-num">10</span>
+<span class="tok-cmt">-- Parses fine. The `abv DESC` ordering is NOT applied to the HTTP response.</span>
+<span class="tok-cmt">-- Rows still come back in IRI order; re-sort by row.fields.abv in your app.</span></code></pre>
+      </div>
+
+      <h2>Hybrid ranking</h2>
+      <p>A hybrid query pairs a <strong>logical filter</strong> (an ontology constraint like <code>IS-A Beer</code>) with a <strong>vector stage</strong> (<code>NEAR ?x TO […]</code>). The two play distinct roles, and understanding the split is the key to reading the results:</p>
+      <div class="grid">
+        <div class="card">
+          <h3><span class="chip symbolic">Symbolic</span> The reasoner filters</h3>
+          <p>The <code>IS-A</code> stage resolves to a class <em>extent</em>: the set of individuals that are members of the class or any of its subclasses, transitively, via the reasoner's classification closure. This is a <strong>hard in/out decision</strong>: a candidate is either in the extent or it isn't. It does not contribute to the score.</p>
+        </div>
+        <div class="card">
+          <h3><span class="chip neural">Neural</span> The vector ranks</h3>
+          <p>Within the filtered candidates, the <code>NEAR</code> stage supplies the ordering: the <code>score</code> on each row. So the reasoner decides <em>who is eligible</em>, and vector similarity decides <em>the order among the eligible</em>.</p>
+        </div>
+      </div>
+      <p>Concretely, <code>FIND ?x WHERE ?x IS-A Beer AND NEAR ?x TO [0.9,0.1,0.5,0.7] LIMIT 5</code> returns the five members of <code>Beer</code> (including <code>Pilsner</code>, <code>Stout</code>, etc. by inference) that are closest to the probe vector, ordered by score. The engine pushes the class bitset directly into the HNSW traversal so a rare class doesn't collapse recall; see <a href="hybrid-queries.html">Hybrid Queries</a> for the filter-during-traversal mechanics.</p>
+      <p>When a single query touches <strong>multiple vector collections</strong>, their lists are merged with <strong>Reciprocal Rank Fusion (RRF, k = 60)</strong>, which fuses on rank position rather than raw distance, so a cosine "0.08" and an L2-squared "0.08" never have to be made comparable. The fused <code>score</code> is then the RRF score, not a distance. A single-collection <code>NEAR</code> keeps its raw similarity.</p>
+      <div class="callout tip"><svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.5.5.9 1.1 1 1.8v.5h6v-.5c.1-.7.5-1.3 1-1.8A7 7 0 0 0 12 2Z"/></svg>
+        <div class="co-body"><span class="co-title">No weighted logical+vector blend</span> Oxid-DB does <strong>not</strong> combine the logical and vector signals into one tunable number. The logical side is a hard filter (in/out of the class extent); the vector side supplies the ordering; RRF only ever fuses several <em>vector</em> lists, and its k = 60 is intentionally not configurable. If you genuinely need per-signal weighting, compute it in your application over the distances, RRF scores, and consistency verdict Oxid returns.</div></div>
+
+      <h2>LIMIT &amp; pagination</h2>
+      <p>Every <code>/query</code> call returns one page. If you omit <code>LIMIT</code>, the default page size is <strong>10 rows</strong>. An explicit <code>LIMIT</code> above the server's <code>max_query_rows</code> cap (default <code>100000</code>) is rejected with a <code>400</code> and an <code>error</code> body, <strong>not</strong> an empty <code>results</code> array, so a single call can't materialize an unbounded result. Check the HTTP status: a client that reads only <code>results</code> would misread the rejection as zero matches rather than "lower the <code>LIMIT</code> or page."</p>
+      <p>There are two ways to walk a full result set, both over <code>POST /query</code>:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mechanism</th><th>How</th><th>When</th></tr></thead>
+          <tbody>
+            <tr><td><code>OFFSET</code> / <code>LIMIT</code></td><td>Keep the same <code>query</code>, increment <code>OFFSET</code> by <code>LIMIT</code> until <code>results</code> is empty (or shorter than <code>LIMIT</code>). Selects the true top-N over the full candidate set each call.</td><td>The always-correct paginator; the recommended path for deep pages and for <code>SORT</code>/<code>NEAR</code> result sets.</td></tr>
+            <tr><td><code>next_cursor</code></td><td>The response returns an opaque base64 <code>next_cursor</code>; resend it as <code>{"query": "...", "cursor": "&lt;next_cursor&gt;"}</code> to resume.</td><td>Convenient for straight scans. Deep multi-page cursors over <code>SORT</code>/<code>NEAR</code> sets are not fully supported; use <code>OFFSET</code>/<code>LIMIT</code> for those.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The SDKs wrap the first mechanism as a <code>query_all</code> helper that transparently drains every page for you:</p>
+
+      <div class="code-tabs" data-tabs>
+        <div class="code-tabs-bar" role="tablist">
+          <button class="code-tab" data-lang="curl">cURL</button>
+          <button class="code-tab" data-lang="python">Python</button>
+          <button class="code-tab" data-lang="typescript">TypeScript</button>
+          <button class="code-tab" data-lang="go">Go</button>
+          <button class="code-tab" data-lang="java">Java</button>
+          <button class="code-tab" data-lang="php">PHP</button>
+          <button class="code-tab" data-lang="csharp">C#</button>
+        </div>
+        <div class="code-panel" data-lang="curl">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code># Page by incrementing OFFSET by LIMIT until results is empty.
+curl -s -X POST https://85cfad134a4a.oxid-db.com/query \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"FIND ?x WHERE ?x IS-A Beer LIMIT 100 OFFSET 0"}'
+# then resend with the returned next_cursor:
+curl -s -X POST https://85cfad134a4a.oxid-db.com/query \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"FIND ?x WHERE ?x IS-A Beer LIMIT 100","cursor":"eyJ0ZXJtIjoi..."}'</code></pre>
+        </div>
+        <div class="code-panel" data-lang="python">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    for hit in db.query_all("FIND ?x WHERE ?x IS-A Beer"):
+        print(hit["iri"])</code></pre>
+        </div>
+        <div class="code-panel" data-lang="typescript">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>const iris: string[] = [];
+for await (const hit of db.queryAll({ query: "FIND ?x WHERE ?x IS-A Beer LIMIT 1000" })) {
+  iris.push(hit.iri);
+}
+console.log(iris.length);</code></pre>
+        </div>
+        <div class="code-panel" data-lang="go">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>count := 0
+for hit, err := range client.QueryAll(ctx, oxid.QueryRequest{Query: "FIND ?x WHERE ?x IS-A Beverage"}) {
+	if err != nil {
+		log.Fatalf("query-all: %v", err) // first error is terminal
+	}
+	count++
+	log.Println(hit.IRI)
+}
+log.Printf("streamed %d hits across all pages", count)</code></pre>
+        </div>
+        <div class="code-panel" data-lang="java">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>for (Query.QueryHit hit : oxid.queryAll(Query.QueryRequest.of("FIND ?x WHERE ?x IS-A Beer"))) {
+    System.out.println(hit.iri());
+}</code></pre>
+        </div>
+        <div class="code-panel" data-lang="php">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>use OxidDb\Client\Model\QueryRequest;
+
+foreach ($oxid-&gt;queryAll(new QueryRequest('FIND ?x WHERE ?x IS-A Beer')) as $hit) {
+    echo $hit-&gt;iri, "\n";
+}</code></pre>
+        </div>
+        <div class="code-panel" data-lang="csharp">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>var total = 0;
+await foreach (QueryHit hit in oxid.QueryAllAsync(
+    new QueryRequest("FIND ?x WHERE ?x IS-A Beverage")))
+{
+    total++;
+    Console.WriteLine(hit.Iri);
+}
+Console.WriteLine($"drained {total} hit(s) across all pages");</code></pre>
+        </div>
+      </div>
+
+      <h2>Where to go next</h2>
+      <div class="grid">
+        <a class="card" href="hybrid-queries.html">
+          <h3>Hybrid Queries</h3>
+          <p>See how the reasoner filter and the vector search compose in one statement: filter-during-traversal, the selectivity switch, and RRF across collections.</p>
+        </a>
+        <a class="card" href="oxql.html">
+          <h3>OxQL Overview</h3>
+          <p>The full query grammar: <code>FIND</code>, <code>WHERE</code>, <code>NEAR</code>, <code>PROJECT</code>, <code>AGGREGATE</code>, <code>LIMIT</code>/<code>OFFSET</code>, and the clauses that do (and don't) affect the wire.</p>
+        </a>
+      </div>
+
+      <div class="pager">
+        <a href="hybrid-queries.html"><span class="dir">← Previous</span><span class="ttl">Hybrid Queries</span></a>
+        <a class="next" href="kge.html"><span class="dir">Next →</span><span class="ttl">Link Prediction (KGE)</span></a>
+      </div>
+
+      <div class="article-footer">
+        <button class="ghost-btn" id="copyMarkdown">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy page as Markdown
+        </button>
+        <div class="spacer"></div>
+        <span>Oxid-DB 0.9.8 · Built with Rust</span>
+      </div>
+    </main>
+
+    <!-- ============================ TOC (auto-filled by docs.js) -->
+    <aside class="toc" aria-label="On this page">
+      <div class="toc-title">On this page</div>
+      <nav id="tocNav"></nav>
+    </aside>
+  </div>
+
+  <!-- ==================================================== SITE FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="Oxid-DB home">
+          <svg class="logo-svg" style="height:28px" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <g>
+              <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+              <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+              <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+              <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+              <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+              <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+              <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+              <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+              <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+              <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+            </g>
+          </svg>
+        </a>
+        <p>A Rust engine that unifies ontology reasoning and vector search in one system.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Docs</h4>
+          <a href="quickstart.html">Quick Start</a>
+          <a href="oxql.html">OxQL</a>
+          <a href="api.html">HTTP API</a>
+          <a href="sdks.html">SDKs</a>
+        </div>
+        <div class="footer-col">
+          <h4>Concepts</h4>
+          <a href="ontologies.html">Ontologies</a>
+          <a href="vectors.html">Vectors</a>
+          <a href="hybrid-queries.html">Hybrid Queries</a>
+          <a href="kge.html">Link Prediction</a>
+        </div>
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="access.html">Access &amp; Hosting</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="storage.html">Storage</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Oxid-DB · Documentation v0.9.8</div>
+  </footer>
+
+  <!-- ==================================================== SEARCH MODAL -->
+  <div class="overlay" id="searchOverlay">
+    <div class="search-modal" role="dialog" aria-modal="true" aria-label="Search documentation">
+      <div class="search-input-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Search documentation…" autocomplete="off" spellcheck="false" />
+        <span class="kbd" style="font-family:var(--font-mono);font-size:11px;border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--muted)">Esc</span>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+      <div class="search-foot">
+        <span><span class="kbd">↑</span> <span class="kbd">↓</span> navigate</span>
+        <span><span class="kbd">↵</span> open</span>
+        <span><span class="kbd">esc</span> close</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/highlight.min.js" defer></script>
+  <script src="assets/docs.js" defer></script>
+</body>
+</html>

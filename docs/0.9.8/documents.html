@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Store Overview: Oxid-DB Documentation (0.9.8)</title>
+  <meta name="description" content="Store schema-free JSON documents in named collections and, optionally, type them into your ontology so the reasoner and vector search treat them as first-class individuals." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="mask-icon" href="favicon.svg" color="#143f61" />
+
+  <!-- Prevent theme flash: apply stored theme before first paint -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('oxid-theme') || 'system';
+        var resolved = stored === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : stored;
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme-pref', stored);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+
+  <!-- ==================================================== HEADER -->
+  <header class="header">
+    <button class="icon-btn hamburger" id="hamburger" aria-label="Open navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <a class="brand" href="index.html" aria-label="Oxid-DB documentation home">
+      <svg class="logo-svg" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <g>
+          <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+          <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+          <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+          <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+          <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+          <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+          <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+          <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+          <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+          <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+        </g>
+      </svg>
+      <span class="brand-sub">Docs</span>
+    </a>
+
+    <div class="header-spacer"></div>
+
+    <button class="search-trigger" id="searchTrigger" aria-label="Search documentation">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <span class="st-label">Search documentation…</span>
+      <span class="kbd">/</span>
+    </button>
+
+    <div class="dropdown-wrap">
+      <button class="ctrl" id="versionBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="ctrl-label">Version</span>
+        <strong style="color:var(--text)">0.9.8</strong>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="dropdown" id="versionMenu" role="menu">
+        <a class="dropdown-item" href="../0.9.8/index.html" aria-current="true">0.9.8 <span class="tag current">Current</span></a>
+        <a class="dropdown-item" href="../0.9.7/index.html">0.9.7 <span class="tag maintained">Previous</span></a>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme" aria-haspopup="true" aria-expanded="false">
+        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
+      </button>
+      <div class="dropdown" id="themeMenu" role="menu">
+        <button class="dropdown-item" data-theme-set="light">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          Light <span class="check" data-check="light">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="dark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          Dark <span class="check" data-check="dark">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="system">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          System <span class="check" data-check="system">✓</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- ==================================================== SHELL -->
+  <div class="shell">
+
+    <div class="version-banner">
+      <span class="dot">●</span>
+      <span>You're reading the docs for <strong>Oxid-DB 0.9.8</strong>, the current release. Older versions are available from the version selector.</span>
+    </div>
+
+    <!-- ============================ SHARED SIDEBAR (do not edit per-page; docs.js marks the active link) -->
+    <nav class="sidebar" id="sidebar" aria-label="Documentation">
+      <div class="nav-group">
+        <div class="nav-group-label">Getting Started</div>
+        <a class="nav-item" href="index.html">Introduction</a>
+        <a class="nav-item" href="quickstart.html">Quick Start</a>
+        <a class="nav-item" href="access.html">Access &amp; Hosting</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Core Concepts</div>
+        <a class="nav-item" href="ontologies.html">Ontologies</a>
+        <a class="nav-item" href="reasoning.html">Reasoning (OWL 2 EL&perp;)</a>
+        <a class="nav-item" href="vectors.html">Vector Search</a>
+        <a class="nav-item" href="hybrid-queries.html">Hybrid Queries <span class="badge">core</span></a>
+        <a class="nav-item" href="scoring.html">Scoring &amp; Ranking</a>
+        <a class="nav-item" href="kge.html">Link Prediction (KGE)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">OxQL Query Language</div>
+        <a class="nav-item" href="oxql.html">OxQL Overview</a>
+        <a class="nav-item" href="documents-queries.html">Querying Documents</a>
+        <a class="nav-item" href="aggregation.html">Aggregation</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Document Store</div>
+        <a class="nav-item" href="documents.html">Overview</a>
+        <a class="nav-item" href="documents-insert.html">Inserting &amp; Bulk Loading</a>
+        <a class="nav-item" href="documents-indexing.html">Indexing &amp; Schema</a>
+        <a class="nav-item" href="ontology-bridge.html">The Ontology Bridge</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Server &amp; SDKs</div>
+        <a class="nav-item" href="api.html">HTTP API</a>
+        <a class="nav-item" href="sdks.html">SDKs &amp; Clients</a>
+        <a class="nav-item" href="transactions.html">Transactions</a>
+        <a class="nav-item" href="mcp.html">MCP Integration</a>
+        <a class="nav-item" href="web-ui.html">Web UI</a>
+        <a class="nav-item" href="authentication.html">Authentication</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Operations</div>
+        <a class="nav-item" href="operations.html">Install, CLI &amp; Settings</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Architecture</div>
+        <a class="nav-item" href="architecture.html">System Design</a>
+        <a class="nav-item" href="storage.html">Storage &amp; Durability</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Reference</div>
+        <a class="nav-item" href="changelog.html">Changelog</a>
+      </div>
+    </nav>
+
+    <!-- ============================ ARTICLE: the ONLY region a page fills -->
+    <main class="article">
+      <div class="breadcrumb"><a href="index.html">Docs</a> / Document Store / <span>Overview</span></div>
+
+      <h1>Document Store</h1>
+      <p class="lead">Schema-free JSON documents that live in named collections, and, when you want it, become typed ontology individuals the reasoner and vector search can see.</p>
+
+      <p>Oxid-DB is best known as a <strong>neurosymbolic</strong> engine: it reasons over an OWL&nbsp;2 EL&perp; ontology and searches vector embeddings in one process. The <strong>document store</strong> is the third pillar. It holds the kind of JSON you already have (from an API, a log, or an export) with <strong>no schema to declare up front</strong>. You drop documents into a collection, query them with field filters, and (optionally) <em>type</em> them into your ontology so the same reasoner and hybrid search work over them for free.</p>
+
+      <div class="callout note"><svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body"><span class="co-title">You don't need ontologies to start</span> The document store works as a plain JSON database on its own. The reasoning and vector parts are opt-in. Every example on this page runs against a server at <code>https://85cfad134a4a.oxid-db.com</code>. Start there, add the clever bits when you want them.</div>
+      </div>
+
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body">
+          <span class="co-title"><span class="ver-badge blue">Since 0.9.7</span></span>
+          Documents can now carry a <strong>GeoPoint</strong> field: a latitude/longitude pair written with the <code>{"$geo":{"lat":&nbsp;&hellip;,"lon":&nbsp;&hellip;}}</code> sentinel and stored losslessly. Once your documents hold coordinates you can filter by radius and sort by distance in OxQL, add an opt-in spatial index for large collections, and view a collection on a map in the Web UI. See the <a href="changelog.html">Changelog</a> for the full 0.9.6&nbsp;&rarr;&nbsp;0.9.7 difference.
+        </div>
+      </div>
+
+      <h2>The JSON document model</h2>
+      <p>A <strong>document</strong> is just a JSON object. It can be as small as <code>{"name":"Heineken"}</code> or deeply nested (up to 16 levels). Documents live in <strong>collections</strong> (named buckets like <code>beers</code> or <code>breweries</code>) and there is <strong>no fixed schema</strong>: two documents in the same collection may carry completely different fields. Oxid-DB discovers the shape of your data as it arrives.</p>
+      <p>Every document has an <strong>IRI</strong>, a stable string id. You supply your own with the top-level <code>_iri</code> field; if you omit it, the store synthesises one as <code>{collection}#{n}</code> (a per-collection counter). That IRI is the same id the ontology and vector layers use, which is what makes the bridge below possible.</p>
+
+      <p>Here is a single beer document as you would send it:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="lang">json</span><button class="copy-btn">Copy</button></div>
+        <pre><code>{
+  "_iri": "Duvel",
+  "name": "Duvel",
+  "style": "Belgian Strong Ale",
+  "abv": 8.5,
+  "brewery": "Duvel Moortgat",
+  "tags": ["belgian", "bottle-conditioned"],
+  "released": { "$timestamp": 1716500000000 }
+}</code></pre>
+      </div>
+
+      <p>Internally each value is one of <strong>eleven typed variants</strong>. Seven map straight to and from ordinary JSON; the other four are engine-native and use a single-key <em>tagged</em> object form. You rarely think about the list (you just send JSON) but it explains what the engine can store, index, compare, and aggregate.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Type</th><th>JSON you send</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>String</td><td><code>"Duvel"</code></td><td>Text. Supports prefix (range) matching when indexed.</td></tr>
+            <tr><td>Int</td><td><code>5</code></td><td>64-bit signed integer.</td></tr>
+            <tr><td>Float</td><td><code>8.5</code></td><td>64-bit double. <code>5</code> and <code>5.0</code> are <em>different</em> stored types. See the note below.</td></tr>
+            <tr><td>Bool</td><td><code>true</code></td><td>True or false.</td></tr>
+            <tr><td>Null</td><td><code>null</code></td><td>An explicit null is still a present field.</td></tr>
+            <tr><td>Array</td><td><code>["belgian","ale"]</code></td><td>Ordered list of values.</td></tr>
+            <tr><td>Object</td><td><code>{"city":"Puurs"}</code></td><td>Nested document. Reach inner fields with dotted paths, e.g. <code>address.city</code>.</td></tr>
+            <tr><td>Timestamp</td><td><code>{"$timestamp": 1716500000000}</code></td><td>Epoch milliseconds. Orderable. Single-key tagged object.</td></tr>
+            <tr><td>Binary</td><td><code>{"$binary": [0,1,2,255]}</code></td><td>Opaque bytes as a JSON array of integers <code>0 to 255</code>. Stored, not indexed.</td></tr>
+            <tr><td>Vector</td><td><code>{"$vector": [0.12, 0.90, 0.31, 0.07]}</code></td><td>An embedding. Must use this tagged form. A <em>bare</em> array stores an <em>Array</em>, not a Vector. See the limits note at the end.</td></tr>
+            <tr><td>GeoPoint <span class="ver-badge blue">0.9.7</span></td><td><code>{"$geo": {"lat": 52.3702, "lon": 4.8952}}</code></td><td>A geographic point. Order is always <code>(lat, lon)</code>: latitude in <code>[-90, 90]</code> (positive north), longitude in <code>[-180, 180]</code> (positive east). See the note below.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn"><svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <div class="co-body"><span class="co-title">Int vs Float: filters coerce, sort/group don't</span> Comparisons treat Int and Float as one numeric domain. A filter <code>?x.abv = 5</code> matches both the integer <code>5</code> and the float <code>5.0</code>. But <code>SORT</code> and <code>GROUP BY</code> order by the <em>stored</em> type, so an Int <code>5</code> and a Float <code>5.0</code> land in different groups. Encode a numeric field consistently across a collection if you intend to group or sort on it.</div>
+      </div>
+
+      <h3>GeoPoint fields <span class="ver-badge blue">0.9.7</span></h3>
+      <p>A <strong>GeoPoint</strong> is a geographic coordinate stored as a document field. You write it with the single-key <code>$geo</code> sentinel, whose value is an object with <code>lat</code> and <code>lon</code> numbers. The order is always <strong>(lat, lon)</strong>: latitude comes first, in <code>[-90, 90]</code> with positive values north; longitude comes second, in <code>[-180, 180]</code> with positive values east.</p>
+
+      <div class="code-block">
+        <div class="code-head"><span class="lang">json</span><button class="copy-btn">Copy</button></div>
+        <pre><code>{
+  "_iri": "ams-brewery",
+  "kind": "Brewery",
+  "name": "Amsterdam Brewery",
+  "location": { "$geo": { "lat": 52.3702, "lon": 4.8952 } }
+}</code></pre>
+      </div>
+
+      <p>Coordinates are validated on insert: an out-of-range or non-finite <code>lat</code>/<code>lon</code> is rejected with <code>400</code>, and the error names the <code>(lat, lon)</code> order so a swapped pair is easy to spot. A stored GeoPoint is kept losslessly in the binary document format and the write-ahead log, and rebuilt on checkpoint. GeoPoint is a <strong>document-only</strong> type: it does not bridge into the ontology. Once your documents carry GeoPoints you can filter by radius and sort by distance in OxQL (see <a href="documents-queries.html">Querying Documents</a>) and, for large collections, add an opt-in spatial index (see <a href="documents-indexing.html">Indexing &amp; Schema</a>).</p>
+
+      <h2>Collections</h2>
+      <p>A collection is a named bucket of documents. There are two ways one comes into existence, and the difference matters:</p>
+      <ul>
+        <li><strong>Document collections auto-create.</strong> The first time you <code>POST</code> a document to <code>/documents/beers</code>, the <code>beers</code> collection springs into being. You never have to declare it.</li>
+        <li><strong>Vector collections are created explicitly</strong> with <code>POST /collections</code>. This is a separate concept: it provisions an HNSW similarity index with a fixed <strong>dimension</strong> and distance <strong>metric</strong>. Those two settings describe the collection's <em>vectors</em>, not its documents.</li>
+      </ul>
+      <p>You only need <code>POST /collections</code> when you want a dedicated, searchable vector index (for example the target of an embedding pipeline, or the destination the ontology bridge upserts into). A pure document collection carries no vectors and needs no <code>dimensions</code>/<code>metric</code> at all. Create a vector collection like this:</p>
+
+      <div class="code-tabs" data-tabs>
+        <div class="code-tabs-bar" role="tablist">
+          <button class="code-tab" data-lang="curl">cURL</button>
+          <button class="code-tab" data-lang="python">Python</button>
+          <button class="code-tab" data-lang="typescript">TypeScript</button>
+          <button class="code-tab" data-lang="go">Go</button>
+          <button class="code-tab" data-lang="java">Java</button>
+          <button class="code-tab" data-lang="php">PHP</button>
+          <button class="code-tab" data-lang="csharp">C#</button>
+        </div>
+        <div class="code-panel" data-lang="curl">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/collections \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"beers","dimensions":384,"metric":"cosine","quantization":"none"}'</code></pre>
+        </div>
+        <div class="code-panel" data-lang="python">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    db.create_collection("beers", dim=4, metric="cosine")
+    # creating the same shape again returns 409 - catch OxidHttpError, ignore 409</code></pre>
+        </div>
+        <div class="code-panel" data-lang="typescript">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>// Field is `dimensions` (not `dim`).
+await db.createCollection({ name: "beers", dimensions: 4, metric: "cosine" });
+
+const list = await db.collections();
+console.log(list.collections.map((c) =&gt; `${c.name}/${c.dimensions}`));</code></pre>
+        </div>
+        <div class="code-panel" data-lang="go">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>// The field is `Dimensions` (not `dim`). Metric: cosine | l2 | ip | manhattan.
+if err := client.CreateCollection(ctx, oxid.CreateCollectionRequest{
+	Name:       "beverages",
+	Dimensions: 4,        // 4-dim vectors
+	Metric:     "cosine",
+}); err != nil {
+	log.Fatalf("create collection: %v", err)
+}</code></pre>
+        </div>
+        <div class="code-panel" data-lang="java">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>// 4-dim vector collection for beverage embeddings (field is `dimensions`, not `dim`)
+oxid.createCollection(Collections.CreateCollectionRequest.of("beverages", 4));</code></pre>
+        </div>
+        <div class="code-panel" data-lang="php">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>use OxidDb\Client\Model\CreateCollectionRequest;
+
+// The field is `dimensions`, not `dim`.
+$oxid-&gt;createCollection(new CreateCollectionRequest('demo_beers', 4, 'cosine'));</code></pre>
+        </div>
+        <div class="code-panel" data-lang="csharp">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>// A 4-dim collection for beverage vectors (wire key is `dimensions`, not `dim`).
+await oxid.CreateCollectionAsync(new CreateCollectionRequest("beers", 4));
+
+// With an explicit metric:
+await oxid.CreateCollectionAsync(new CreateCollectionRequest("beers", 4, Metric: "cosine"));</code></pre>
+        </div>
+      </div>
+
+      <p>The wire field is <code>dimensions</code> (some SDKs surface it as <code>dim</code> for brevity). <code>metric</code> is one of <code>cosine</code> (default), <code>l2</code>, <code>ip</code>, or <code>manhattan</code>; for all four, lower distance means more similar. Re-creating a collection with the <em>same</em> shape is a safe no-op that returns <code>409</code>. Catch and ignore it. See <a href="vectors.html">Vector Search</a> for what these settings do under the hood.</p>
+
+      <h2>Your first document</h2>
+      <p>Inserting is a single <code>POST</code> to <code>/documents/{collection}</code> whose body is the raw JSON document. An optional top-level <code>_iri</code> sets the id; leave it out and the store synthesises one. The response echoes the collection and the resolved IRI.</p>
+
+      <div class="code-tabs" data-tabs>
+        <div class="code-tabs-bar" role="tablist">
+          <button class="code-tab" data-lang="curl">cURL</button>
+          <button class="code-tab" data-lang="python">Python</button>
+          <button class="code-tab" data-lang="typescript">TypeScript</button>
+          <button class="code-tab" data-lang="go">Go</button>
+          <button class="code-tab" data-lang="java">Java</button>
+          <button class="code-tab" data-lang="php">PHP</button>
+          <button class="code-tab" data-lang="csharp">C#</button>
+        </div>
+        <div class="code-panel" data-lang="curl">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/documents/people \
+  -H 'Content-Type: application/json' \
+  -d '{"_iri":"Dave","name":"Dave","score":3}'</code></pre>
+        </div>
+        <div class="code-panel" data-lang="python">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    res = db.insert_document("beers", {"name": "Heineken", "abv": 5.0}, iri="Heineken")
+    # res: {"ok": true, "collection": "beers", "iri": "Heineken"}</code></pre>
+        </div>
+        <div class="code-panel" data-lang="typescript">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>const res = await db.insertDocument("beers", {
+  _iri: "Heineken",
+  name: "Heineken",
+  style: "Pilsner",
+  abv: 5.0,
+});
+console.log(res.ok, res.iri); // true "Heineken"</code></pre>
+        </div>
+        <div class="code-panel" data-lang="go">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>res, err := client.InsertDocument(ctx, "beverages", oxid.Document{
+	"_iri":  "PilsnerUrquell",
+	"name":  "Pilsner Urquell",
+	"style": "Pilsner",
+	"abv":   4.4,
+})
+if err != nil {
+	log.Fatalf("insert document: %v", err)
+}
+log.Printf("ok=%v iri=%s", res.Ok, res.IRI)</code></pre>
+        </div>
+        <div class="code-panel" data-lang="java">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>import java.util.Map;
+
+Documents.InsertDocumentResponse res = oxid.insertDocument("beverages", Map.of(
+        "id", "Heineken",
+        "name", "Heineken",
+        "style", "Pilsner",
+        "abv", 5.0));
+System.out.println(res.iri());</code></pre>
+        </div>
+        <div class="code-panel" data-lang="php">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>$res = $oxid-&gt;insertDocument('beer_catalog', [
+    '_iri'  =&gt; 'Heineken',
+    'name'  =&gt; 'Heineken',
+    'style' =&gt; 'Pilsner',
+    'abv'   =&gt; 5.0,
+]);
+print_r($res);</code></pre>
+        </div>
+        <div class="code-panel" data-lang="csharp">
+          <button class="copy-btn tab-copy">Copy</button>
+          <pre><code>InsertDocumentResponse res = await oxid.InsertDocumentAsync("beers",
+    new Dictionary&lt;string, object?&gt;
+    {
+        ["name"]  = "Pilsner Urquell",
+        ["style"] = "Pilsner",
+        ["abv"]   = 4.4,
+    });
+Console.WriteLine($"inserted {res.Iri} into {res.Collection} (ok={res.Ok})");</code></pre>
+        </div>
+      </div>
+
+      <p>The <code>curl</code> call returns <code>{"ok":true,"collection":"people","iri":"Dave"}</code>. Inserting again with the same IRI is an <strong>upsert</strong>. It replaces the stored document rather than erroring. For loading many documents at once, or streaming NDJSON in and out, see <a href="documents-insert.html">Inserting &amp; Bulk Loading</a>.</p>
+
+      <h2>The bridge (preview)</h2>
+      <p>So far this is a plain JSON store. The payoff comes when you <strong>type</strong> a collection into an ontology class. You register a mapping that says "documents in <code>beers</code> are individuals of class <code>Beer</code>, field <code>brewery</code> is the object property <code>producedBy</code>, field <code>abv</code> is a data property," and turn on <code>auto_type</code>. From then on, every document you insert automatically becomes a typed individual with those facts, so after the next classification it lands in the <code>Beer</code> class extent, and the same hybrid <code>IS-A Beer … NEAR</code> query works over your ingested JSON with zero extra machinery.</p>
+
+      <div class="callout tip"><svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>
+        <div class="co-body"><span class="co-title">This is the neurosymbolic payoff</span> A mapped document's IRI is the same id the reasoner and vector index use, so no join and no separate ID space are involved. The document simply <em>is</em> the individual. Mappings are persisted and survive restarts; you register them once. Full walkthrough on <a href="ontology-bridge.html">The Ontology Bridge</a>.</div>
+      </div>
+
+      <h2>How documents relate to the rest</h2>
+      <div class="grid">
+        <a class="card" href="documents-insert.html">
+          <h3>Inserting &amp; Bulk Loading →</h3>
+          <p>Single inserts, the <code>_iri</code> convention, bulk arrays, and streaming NDJSON in and out.</p>
+        </a>
+        <a class="card" href="documents-indexing.html">
+          <h3>Indexing &amp; Schema →</h3>
+          <p>BTreeMap secondary indexes for equality and range queries, compound indexes, and how the store learns your data's shape.</p>
+        </a>
+        <a class="card" href="documents-queries.html">
+          <h3>Querying Documents →</h3>
+          <p>Read documents back with OxQL <code>FROM</code>: field filters, <code>EXISTS</code>, <code>CONTAINS</code>, dotted paths, and hybrid ontology + vector + document queries.</p>
+        </a>
+        <a class="card" href="ontology-bridge.html">
+          <h3>The Ontology Bridge →</h3>
+          <p>Type a document collection into a class and let the reasoner and hybrid search treat its documents as first-class individuals.</p>
+        </a>
+      </div>
+
+      <h2>Honest limits</h2>
+      <p>A document <em>can</em> carry an embedding inline via the tagged <code>{"$vector": [...]}</code> field, but storing it inside the document does <strong>not</strong> by itself make it searchable. Similarity search runs over a <strong>vector collection</strong> (the HNSW index you create with <code>POST /collections</code>); the document byte-store and the vector index are separate. To make a document's embedding searchable, either map the field through the ontology bridge as a <code>vector_property</code> (which upserts it into a named vector collection) or upsert the vector directly. A bare JSON array (<code>[0.1, 0.9]</code>) is stored as an <em>Array</em> field, never as a vector; only the <code>$vector</code> tagged form is treated as an embedding.</p>
+      <p>Two smaller gotchas worth knowing early: a <code>$binary</code> field is stored but never indexed, and (as noted above) Int and Float sort and group as distinct types even though filters compare them as numbers.</p>
+
+      <div class="pager">
+        <a href="aggregation.html"><span class="dir">← Previous</span><span class="ttl">Aggregation</span></a>
+        <a class="next" href="documents-insert.html"><span class="dir">Next →</span><span class="ttl">Inserting &amp; Bulk Loading</span></a>
+      </div>
+
+      <div class="article-footer">
+        <button class="ghost-btn" id="copyMarkdown">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy page as Markdown
+        </button>
+        <div class="spacer"></div>
+        <span>Oxid-DB 0.9.8 · Built with Rust</span>
+      </div>
+    </main>
+
+    <!-- ============================ TOC (auto-filled by docs.js) -->
+    <aside class="toc" aria-label="On this page">
+      <div class="toc-title">On this page</div>
+      <nav id="tocNav"></nav>
+    </aside>
+  </div>
+
+  <!-- ==================================================== SITE FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="Oxid-DB home">
+          <svg class="logo-svg" style="height:28px" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <g>
+              <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+              <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+              <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+              <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+              <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+              <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+              <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+              <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+              <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+              <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+            </g>
+          </svg>
+        </a>
+        <p>A Rust engine that unifies ontology reasoning and vector search in one system.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Docs</h4>
+          <a href="quickstart.html">Quick Start</a>
+          <a href="oxql.html">OxQL</a>
+          <a href="api.html">HTTP API</a>
+          <a href="sdks.html">SDKs</a>
+        </div>
+        <div class="footer-col">
+          <h4>Concepts</h4>
+          <a href="ontologies.html">Ontologies</a>
+          <a href="vectors.html">Vectors</a>
+          <a href="hybrid-queries.html">Hybrid Queries</a>
+          <a href="kge.html">Link Prediction</a>
+        </div>
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="access.html">Access &amp; Hosting</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="storage.html">Storage</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Oxid-DB · Documentation v0.9.8</div>
+  </footer>
+
+  <!-- ==================================================== SEARCH MODAL -->
+  <div class="overlay" id="searchOverlay">
+    <div class="search-modal" role="dialog" aria-modal="true" aria-label="Search documentation">
+      <div class="search-input-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Search documentation…" autocomplete="off" spellcheck="false" />
+        <span class="kbd" style="font-family:var(--font-mono);font-size:11px;border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--muted)">Esc</span>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+      <div class="search-foot">
+        <span><span class="kbd">↑</span> <span class="kbd">↓</span> navigate</span>
+        <span><span class="kbd">↵</span> open</span>
+        <span><span class="kbd">esc</span> close</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/highlight.min.js" defer></script>
+  <script src="assets/docs.js" defer></script>
+</body>
+</html>

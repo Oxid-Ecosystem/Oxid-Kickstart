@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog: Oxid-DB Documentation (0.9.8)</title>
+  <meta name="description" content="Per-release changelog for Oxid-DB: features, changes, and bug fixes, with the exact 0.9.7 to 0.9.8 difference." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="mask-icon" href="favicon.svg" color="#143f61" />
+
+  <!-- Prevent theme flash: apply stored theme before first paint -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('oxid-theme') || 'system';
+        var resolved = stored === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : stored;
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme-pref', stored);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+
+  <!-- ==================================================== HEADER -->
+  <header class="header">
+    <button class="icon-btn hamburger" id="hamburger" aria-label="Open navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <a class="brand" href="index.html" aria-label="Oxid-DB documentation home">
+      <svg class="logo-svg" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <g>
+          <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+          <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+          <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+          <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+          <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+          <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+          <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+          <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+          <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+          <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+        </g>
+      </svg>
+      <span class="brand-sub">Docs</span>
+    </a>
+
+    <div class="header-spacer"></div>
+
+    <button class="search-trigger" id="searchTrigger" aria-label="Search documentation">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <span class="st-label">Search documentation…</span>
+      <span class="kbd">/</span>
+    </button>
+
+    <div class="dropdown-wrap">
+      <button class="ctrl" id="versionBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="ctrl-label">Version</span>
+        <strong style="color:var(--text)">0.9.8</strong>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="dropdown" id="versionMenu" role="menu">
+        <a class="dropdown-item" href="../0.9.8/index.html" aria-current="true">0.9.8 <span class="tag current">Current</span></a>
+        <a class="dropdown-item" href="../0.9.7/index.html">0.9.7 <span class="tag maintained">Previous</span></a>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme" aria-haspopup="true" aria-expanded="false">
+        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
+      </button>
+      <div class="dropdown" id="themeMenu" role="menu">
+        <button class="dropdown-item" data-theme-set="light">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          Light <span class="check" data-check="light">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="dark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          Dark <span class="check" data-check="dark">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="system">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          System <span class="check" data-check="system">✓</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- ==================================================== SHELL -->
+  <div class="shell">
+
+    <div class="version-banner">
+      <span class="dot">●</span>
+      <span>You're reading the docs for <strong>Oxid-DB 0.9.8</strong>, the current release. Older versions are available from the version selector.</span>
+    </div>
+
+    <!-- ============================ SHARED SIDEBAR (do not edit per-page; docs.js marks the active link) -->
+    <nav class="sidebar" id="sidebar" aria-label="Documentation">
+      <div class="nav-group">
+        <div class="nav-group-label">Getting Started</div>
+        <a class="nav-item" href="index.html">Introduction</a>
+        <a class="nav-item" href="quickstart.html">Quick Start</a>
+        <a class="nav-item" href="access.html">Access &amp; Hosting</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Core Concepts</div>
+        <a class="nav-item" href="ontologies.html">Ontologies</a>
+        <a class="nav-item" href="reasoning.html">Reasoning (OWL 2 EL&perp;)</a>
+        <a class="nav-item" href="vectors.html">Vector Search</a>
+        <a class="nav-item" href="hybrid-queries.html">Hybrid Queries <span class="badge">core</span></a>
+        <a class="nav-item" href="scoring.html">Scoring &amp; Ranking</a>
+        <a class="nav-item" href="kge.html">Link Prediction (KGE)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">OxQL Query Language</div>
+        <a class="nav-item" href="oxql.html">OxQL Overview</a>
+        <a class="nav-item" href="documents-queries.html">Querying Documents</a>
+        <a class="nav-item" href="aggregation.html">Aggregation</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Document Store</div>
+        <a class="nav-item" href="documents.html">Overview</a>
+        <a class="nav-item" href="documents-insert.html">Inserting &amp; Bulk Loading</a>
+        <a class="nav-item" href="documents-indexing.html">Indexing &amp; Schema</a>
+        <a class="nav-item" href="ontology-bridge.html">The Ontology Bridge</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Server &amp; SDKs</div>
+        <a class="nav-item" href="api.html">HTTP API</a>
+        <a class="nav-item" href="sdks.html">SDKs &amp; Clients</a>
+        <a class="nav-item" href="transactions.html">Transactions</a>
+        <a class="nav-item" href="mcp.html">MCP Integration</a>
+        <a class="nav-item" href="web-ui.html">Web UI</a>
+        <a class="nav-item" href="authentication.html">Authentication</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Operations</div>
+        <a class="nav-item" href="operations.html">Install, CLI &amp; Settings</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Architecture</div>
+        <a class="nav-item" href="architecture.html">System Design</a>
+        <a class="nav-item" href="storage.html">Storage &amp; Durability</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Reference</div>
+        <a class="nav-item" href="changelog.html">Changelog</a>
+      </div>
+    </nav>
+
+    <!-- ============================ ARTICLE: the ONLY region a page fills -->
+    <main class="article">
+      <div class="breadcrumb"><a href="index.html">Docs</a> / Reference / <span>Changelog</span></div>
+
+      <h1>Changelog</h1>
+      <p class="lead">Every notable change to Oxid-DB, per release: features, changes, and bug fixes. These docs describe the current release, 0.9.8.</p>
+
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body">
+          <span class="co-title">These docs describe 0.9.8</span>
+          This site tracks the current release. Use the version selector (top right) to switch between <strong>0.9.8</strong> (current) and <strong>0.9.7</strong> (previous). Features added in 0.9.8 are marked <span class="ver-badge">New in 0.9.8</span> throughout the docs; features that arrived one release earlier carry a <span class="ver-badge blue">Since 0.9.7</span> badge.
+        </div>
+      </div>
+
+      <h2>What changed for developers (0.9.7 &rarr; 0.9.8)</h2>
+      <p>0.9.8 is a <strong>hardening and production-readiness release</strong>, not a feature release: it fixes a silent data-loss bug in bulk import, makes bulk-insert validation complete, adds a durability policy for disk failures and an automated restore drill, and makes the memory governor explain itself. No storage-format change, no new MCP tools, no reasoner change. If you build against a 0.9.7 endpoint, these are the differences you can observe from a client:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Area</th><th>0.9.7</th><th>0.9.8</th></tr></thead>
+        <tbody>
+          <tr><td>Bulk import durability</td><td><code>POST /import/csv</code> and <code>POST /import/owl</code> could be silently lost on the next reopen under the default <code>delta</code> checkpoint mode</td><td><strong>Fixed</strong> (#325): both routes force a whole-world checkpoint, so an import always survives a restart</td></tr>
+          <tr><td><code>POST /insert/batch</code>: collections</td><td>A per-entity <code>collection</code> key was silently dropped; every vector went to the batch-level or default collection</td><td>Per-entity <code>collection</code> is honoured (<code>entity.collection</code> &rarr; batch <code>collection</code> &rarr; database default), so one batch can target several collections (#370)</td></tr>
+          <tr><td><code>POST /insert/batch</code>: validation</td><td>Only the first vector-bearing entity was dimension-checked up front; later mismatches surfaced per row</td><td>Every vector-bearing entity is checked up front: a dimension mismatch, or a fallback to a default collection that does not exist, is a <code>400</code> naming the offending entity. A <em>named</em> collection that is missing stays best-effort per row (<code>200</code> with <code>ok:false</code>)</td></tr>
+          <tr><td>OxQL <code>IS-A</code></td><td>The class had to be a bare token (no hyphens or other characters outside the identifier set)</td><td><code>IS-A &lt;http://&hellip;&gt;</code> accepts an angle-bracketed verbatim IRI, SPARQL-style, so hyphenated concept IRIs are queryable</td></tr>
+          <tr><td>OxQL bare <code>NEAR</code></td><td><code>NEAR ?x TO &hellip;</code> without a <code>.collection</code> qualifier searched the (possibly non-existent) <code>default</code> collection</td><td>Auto-selects the <strong>sole</strong> collection when exactly one exists; with none, or several and no default, the error names the fix and the available collections (#371). <code>EXPLAIN</code> reports the same resolution</td></tr>
+          <tr><td><code>GET /ready</code> · <code>GET /admin/memory</code></td><td><code>admission_state</code> only</td><td>Adds <code>admission_driver</code>: <code>"estimate"</code> (live-data estimate drives admission, delete to recover) or <code>"rss"</code> (real process RSS drives it, deletes will not help). The <code>507</code> soft/hard messages name the driver too</td></tr>
+          <tr><td><code>PUT /config/embedder</code> · <code>POST /config/apply</code></td><td>Switching the embedder model on a database that already holds vectors was accepted, silently mixing two embedding spaces</td><td><code>PUT /config/embedder</code> returns <code>409 EMBEDDER_MODEL_MISMATCH</code> when the new <code>provider:model</code> differs from the one that produced the stored vectors (<code>POST /config/apply</code> reports the same refusal as <code>applied:false</code> with a <code>reason</code>); a prior identity that cannot be known is allowed with a <code>warnings[]</code> entry</td></tr>
+          <tr><td>Durability on disk failure</td><td>Behaviour on a failed WAL <code>fsync</code> was unspecified</td><td><code>[wal].on_fsync_error</code>: <code>abort</code> (default, process aborts and recovers from the last durable record) or opt-in <code>poison</code> (reads continue, every write is refused with <code>503 UNAVAILABLE</code>)</td></tr>
+          <tr><td>Restore drill</td><td>None</td><td><code>oxd backup drill</code> restores the newest backup into a scratch directory, runs a canary, reports the RPO; an opt-in <code>[backup.drill]</code> worker publishes <code>oxdb_restore_drill_*</code> metrics</td></tr>
+          <tr><td>Bundled demos</td><td>2 (<code>landscape</code>, <code>family</code>)</td><td>3: adds <code>tech-concepts</code>, a classless vectors-only collection (133 real 1536-d embeddings, zero classes)</td></tr>
+          <tr><td>Web UI graph</td><td>A many-class ontology (roughly 11k classes) could freeze the graph view</td><td>Backbone-first rendering with count badges and layout size guards; a clearer selection marker, stacked property rows in the entity drawer, and a class-first similarity ring</td></tr>
+          <tr><td>SDKs</td><td>Node <code>@oxiddb/node</code> 0.9.7</td><td>Node <code>@oxiddb/node</code> 0.9.8 (lockstep bump). The other SDKs are unchanged in this release; a 0.9.7 client works unchanged</td></tr>
+          <tr><td>Unchanged</td><td>Format version 12 · 13 MCP tools · EL&perp; reasoner</td><td>Format version <strong>12</strong> · <strong>13</strong> MCP tools · reasoner unchanged (no migration, no re-import)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout warn">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+        <div class="co-body"><span class="co-title">Upgrade note: one data-loss fix and two new rejections</span>
+          The change most likely to matter is the <strong>#325 fix</strong>: on 0.9.7, an entity set loaded through <code>POST /import/csv</code> or <code>POST /import/owl</code> could vanish on the next restart under the default <code>delta</code> checkpoint mode (the TBox from the first checkpoint survived, later ABox imports did not). 0.9.8 persists every import; if you re-imported after restarts as a workaround, you can stop. Two requests that 0.9.7 accepted can now be refused: <code>POST /insert/batch</code> returns <code>400</code> for the <em>whole</em> batch when <em>any</em> entity's vector has the wrong dimension for its collection (0.9.7 checked only the first and let later ones fail per row), and <code>PUT /config/embedder</code> returns <code>409 EMBEDDER_MODEL_MISMATCH</code> (and <code>POST /config/apply</code> reports <code>applied:false</code>) when you switch the embedding model on a database that already holds vectors. Both are deliberate: they turn a silent quality problem into a loud, early error.</div>
+      </div>
+
+      <h2>0.9.8 <span class="ver-badge">Current</span></h2>
+      <p class="src-cite" style="border:0;background:none;padding:0">Released 2026-09-13 (tag <code>v0.9.8</code>), the release these docs describe.</p>
+
+      <span class="chg-label added">Added</span>
+      <ul>
+        <li><strong>Durability policy on <code>fsync</code> failure.</strong> <code>[wal].on_fsync_error</code> decides what happens when a durability-critical WAL <code>fsync</code> fails (typically <code>EIO</code>). <code>abort</code> (default) crashes the process so restart plus WAL recovery replays only genuinely durable records, the only posture that cannot re-acknowledge data the Linux writeback-error semantics silently dropped. <code>poison</code> (opt-in) keeps serving reads but latches durability and refuses every later write and commit with <code>503 UNAVAILABLE</code> until an operator restarts; the latch never clears within a process (prod-01 W1).</li>
+        <li><strong>Automated restore drill.</strong> <code>oxd backup drill [&lt;backup&gt;] [--backups-dir &lt;dir&gt;] [--canary &lt;spec.json&gt;] [--max-rpo-seconds N]</code> restores the newest <code>.oxbak</code> or <code>.oxdb-bundle</code> into a throwaway directory, opens it, runs a structural canary (class, individual and vector counts, a vector self-search round-trip, a consistency check), and reports the RPO (the age of the backup: now minus its modification time). It exits non-zero on a restore failure, a canary miss, or an RPO breach, and <code>--json</code> emits the full report. An opt-in in-process worker (<code>[backup.drill]</code>, off by default: <code>enabled</code>, <code>interval_hours</code> 24, <code>backups_dir</code>, <code>max_rpo_seconds</code>) runs the same drill on a timer and publishes <code>oxdb_restore_drill_last_rpo_seconds</code>, <code>oxdb_restore_drill_last_duration_ms</code>, <code>oxdb_restore_drill_last_total_vectors</code>, <code>oxdb_restore_drill_last_success_ts</code> and the counter <code>oxdb_restore_drill_failures_total</code> (prod-01 W6). A backup nobody has restored is a hypothesis, not a backup.</li>
+        <li><strong>Embedder model-mixing guard.</strong> <code>PUT /config/embedder</code> now refuses, with <code>409 EMBEDDER_MODEL_MISMATCH</code>, to switch the embedder to a different <code>provider:model</code> identity while the database already holds vectors, because two models of the <em>same</em> dimension would silently share one space and degrade recall. Re-applying the same model is allowed; an empty database is allowed; a database whose stored vectors have no known model identity (manual vectors) is allowed with a <code>warnings[]</code> entry, since the no-mix guarantee can only hold from that point on. The identity excludes the Ollama endpoint URL and the dimension (prod-05 W6).</li>
+        <li><strong>Memory admission driver.</strong> <code>GET /ready</code> and the <code>budget</code> object of <code>GET /admin/memory</code> carry <code>admission_driver</code>: <code>"estimate"</code> when the logical live-data estimate is what crossed a watermark (delete data to recover) or <code>"rss"</code> when real process RSS is the floor (allocator retention or an undersized container, so deletes will not free it: raise <code>[server.limits] max_memory</code> or restart). The <code>507</code> soft and hard messages say which one applies, and a new gauge, <code>oxdb_memory_admission_driver</code> (<code>0</code> = estimate, <code>1</code> = rss), exposes it to Prometheus.</li>
+        <li><strong>OxQL: verbatim IRIs in <code>IS-A</code>.</strong> <code>?x IS-A &lt;http://data.europa.eu/esco/occupation/0e2d-24d0-4b73&gt;</code> accepts an angle-bracketed IRI carrying any character the bare identifier set excludes (hyphens, <code>~</code>, <code>%</code>). The bare form is unchanged, the AST is unchanged, an empty <code>&lt;&gt;</code> is a parse error, and rendering re-brackets only when needed.</li>
+        <li><strong>OxQL: bare <code>NEAR</code> resolves the sole collection.</strong> <code>NEAR ?x TO &hellip;</code> with no <code>.collection</code> qualifier and no configured default now searches the one collection that exists instead of a phantom <code>default</code>. With no collections at all, or several and no default, the error tells you to qualify the stage and lists the available names; <code>EXPLAIN</code> reports the same choice (#371).</li>
+        <li><strong>Bundled demo &ldquo;Tech Concepts (Vectors Only)&rdquo;.</strong> A third installable demo, <code>tech-concepts</code>: 133 short concept definitions, each a real OpenAI <code>text-embedding-3-small</code> 1536-dimension vector, with <strong>zero</strong> ontology classes. It shows Oxid-DB as a drop-in vector store you can layer reasoning onto later without re-ingesting a vector. Listed by <code>GET /demos</code>, installed by <code>POST /demos/tech-concepts/install</code>, and offered in the web UI first-run modal.</li>
+      </ul>
+
+      <span class="chg-label changed">Changed</span>
+      <ul>
+        <li><strong><code>POST /insert/batch</code> honours a per-entity <code>collection</code></strong> (#370). The effective collection is resolved per entity (<code>entity.collection</code> &rarr; batch-level <code>collection</code> &rarr; database default), so one batch can target several collections; on 0.9.7 the per-entity key was silently dropped, which produced a confusing <code>collection not found: default</code> on a freshly provisioned server. The up-front validation now scans <strong>every</strong> vector-bearing entity against its own target: a dimension mismatch, or a fallback to a default collection that does not exist yet, is a <code>400</code> for the whole batch naming the offending entity (<code>&lt;iri&gt;: vector dimension mismatch: expected N, got M</code>); 0.9.7 checked only the first vector. A named collection that turns out to be missing stays on the best-effort per-row path (<code>200</code> with <code>ok:false</code> and an <code>errors</code> list). The per-entity key is a wire-level field: the typed <code>BatchEntity</code> shapes in the SDKs do not declare it yet, the Python SDK's dict-based <code>insert_batch</code> passes it through.</li>
+        <li><strong>Web UI graph polish.</strong> A selected individual renders as a solid centre dot, a gap, then a detached dashed ring (also used for a plain focus); property rows in the entity drawer stack the predicate name over its value pill with the retract control on the right, so a long IRI no longer crushes the pill; the class-first similarity reveal clusters revealed neighbours in a ring around the reference and frames it, so the cutoff slider has a visible effect.</li>
+        <li><strong>Memory governor messages are honest about the driver.</strong> A <code>507</code> now says whether the estimate or the process RSS crossed the watermark and what will actually recover it; previously every message suggested deleting data even when allocator retention was the cause.</li>
+        <li>The Node SDK (<code>@oxiddb/node</code>) is bumped to 0.9.8 in lockstep with the server. The JSON wire contract is byte-stable apart from the new <code>admission_driver</code> field, the per-entity <code>collection</code> on <code>/insert/batch</code>, and the new <code>409</code> / <code>503</code> cases above, so a 0.9.7 client works unchanged. The Web, Python, Go, Java, .NET and PHP SDKs are not changed in this release.</li>
+        <li><strong>Internal: the <code>oxd-io</code> crate.</strong> An injectable clock and filesystem seam threaded through the WAL, the checkpoint writer, and the cold-f32 spill, so disk faults (<code>ENOSPC</code>, <code>EIO</code>) are testable end to end. Production uses a zero-overhead pass-through; durability ordering is byte-for-byte unchanged (prod-06 W1).</li>
+      </ul>
+
+      <span class="chg-label fixed">Fixed</span>
+      <ul>
+        <li><strong>Silent loss of bulk imports under the default checkpoint mode (#325).</strong> <code>POST /import/csv</code> and <code>POST /import/owl</code> mutate the ontology in memory without logging to the WAL (a bulk import would flood it) and rely on the next checkpoint to capture the whole effect. Under the default <code>delta</code> mode that checkpoint folded only the committed WAL tail, which is empty for an import, so the import was a no-op on disk and disappeared on reopen: <code>GET /individuals/&lt;iri&gt;</code> went from <code>200</code> to <code>404</code> and <code>IS-A</code> results emptied. Both routes now force a whole-world base rewrite and fold the superseded delta chain into it (<code>checkpoint_after_bulk_import</code>); <code>full</code> mode is byte-for-byte unchanged. Regression tests cover both routes, a post-delta import, and full mode.</li>
+        <li><strong>Web UI graph freeze on a large class backbone (#372).</strong> A many-class, few-individual ontology (roughly 11k classes) froze the graph view: the whole class backbone was added at once and laid out by a synchronous animated layout on the main thread. The view now renders backbone-first with count badges, drops layout animation above a node-count cap, and above a higher cap replaces the chosen layout with a static breadth-first pass and a one-time toast. Small graphs are byte-for-byte unchanged (Phase 0 guardrails).</li>
+      </ul>
+
+      <h2>0.9.7 <span class="ver-badge blue">Previous</span></h2>
+      <p class="src-cite" style="border:0;background:none;padding:0">Released 2026-09-09.</p>
+
+      <span class="chg-label added">Added</span>
+      <ul>
+        <li><strong>First-class geospatial.</strong> A <code>GeoPoint</code> document field type (the JSON sentinel <code>{"$geo":{"lat":&lt;num&gt;,"lon":&lt;num&gt;}}</code>, latitude before longitude), OxQL <code>?x.field WITHIN &lt;d&gt;{km|mi|m} OF (lat, lon)</code> radius filtering and <code>SORT DISTANCE(?x.field, (lat, lon))</code> nearest-first ordering (great-circle Haversine, results carry <code>distance_m</code>), and a typed <code>POST /collections/{name}/geo-search</code> convenience route over the same query AST (geo-01/02/03).</li>
+        <li><strong>Spatial grid index.</strong> An opt-in equirectangular grid index over a <code>GeoPoint</code> field that generates a candidate superset and then refines it with exact Haversine distance. Its definition persists (format v12) and its contents rebuild on load; the superset invariant means it only makes a query faster, never changes the answer (geo-04).</li>
+        <li><strong>Geo map view.</strong> A standalone Leaflet map at <code>/app/geo-map</code>, reached from a document&rsquo;s location cell in the web UI, that plots a collection&rsquo;s points and highlights the opened document.</li>
+        <li><strong>Reasoner: role chains and transitivity.</strong> Length-2 role chains (<code>r&#8728;s &sqsubseteq; t</code>) and transitivity (<code>Trans(r)</code>, which desugars to the self-chain <code>r&#8728;r &sqsubseteq; r</code>) are now reasoned via the CR8 completion rule, <strong>on by default</strong> (reasoner-06, card-10 gate passed 2026-09-09).</li>
+        <li><strong>Reasoner: role axioms authorable end-to-end.</strong> <code>POST /actions/add-axiom</code> gains the <code>subproperty</code> kind (a governed length-1 role hierarchy <code>sub &sqsubseteq; sup</code>), matched across the SDKs (Node <code>AddAxiomRequest</code>, PHP <code>AddAxiomRequest::subproperty()</code>), the MCP <code>add_axiom</code> tool, and lossless OKF export (<code>x-oxid-role-axioms</code>). <code>ObjectPropertyDomain(r, C)</code> is now reasoned as <code>&exist;r.&top; &sqsubseteq; C</code> (reasoner-09).</li>
+        <li><strong>Native import formats.</strong> <code>POST /import/owl</code> now accepts OWL Functional Syntax (<code>.ofn</code>), OBO 1.4 (<code>.obo</code>), OWL Manchester Syntax (<code>.omn</code>), RDF Turtle (<code>.ttl</code>), and N-Triples (<code>.nt</code>) in addition to OWL/XML, detected by extension or content sniff and overridable with <code>?format=</code> (owl-expand-01).</li>
+        <li><strong>MCP <code>geo_search</code> tool</strong>, bringing the agent surface to 13 tools (geo-03).</li>
+        <li><strong>Installable &ldquo;A Reasoned Family&rdquo; demo</strong> in the first-run load-a-demo modal: individuals asserted only as Male/Female and Parent are realized into Father/Mother through <code>Father &equiv; Male &sqcap; Parent</code>, shipped with OpenAI 1536-dimension vectors.</li>
+      </ul>
+
+      <span class="chg-label changed">Changed</span>
+      <ul>
+        <li><strong>Role chains default on.</strong> <code>OXD_REASONER_ROLE_CHAINS</code> now defaults to enabled; set it to <code>0</code> to reproduce the 0.9.6 inference set. With chains off, stored chain axioms are loudly reported as inert by <code>GET /reasoner/fragment</code>.</li>
+        <li><strong>On-disk format version 11 &rarr; 12.</strong> v12 adds <code>GeoPoint</code> values and persisted spatial-index definitions. Older files migrate forward (v11 files upgrade with empty spatial-index definitions); a pre-12 binary refuses a v12 file loudly.</li>
+        <li>The Node SDK (<code>@oxiddb/node</code>) is bumped to 0.9.7 in lockstep with the server; the JSON wire contract stays byte-stable apart from the new routes and fields. The Web, Python, Go, Java, .NET and PHP SDKs caught up to 0.9.7 in the follow-up sdk-sync work: all seven now expose <code>geoSearch</code>, the <code>subproperty</code> axiom kind, <code>distance_m</code> on query hits, and the 0.9.6/0.9.7 routes (<code>/reasoner/fragment</code>, <code>/admin/import</code>, <code>/admin/export</code>, <code>?format=</code> on OWL import).</li>
+      </ul>
+
+      <span class="chg-label fixed">Fixed</span>
+      <ul>
+        <li><strong>Community Edition memory wedge.</strong> The CE Docker image now ships the jemalloc allocator. The default glibc allocator retained freed per-query scratch in per-thread arenas, ratcheting resident memory past the memory governor&rsquo;s hard watermark until the server refused queries with <code>503</code>. jemalloc returns freed pages to the OS. The fix is scoped to the Docker images; a non-Docker glibc deployment can bound arenas with <code>MALLOC_ARENA_MAX=2</code>.</li>
+        <li><strong>Turtle import no longer 400s on the wrong extension.</strong> A valid Turtle body with a <code>.owl</code> extension is now content-sniffed and imported instead of being rejected as malformed XML.</li>
+      </ul>
+
+      <h2>0.9.6 <span class="ver-badge blue">Older</span></h2>
+      <p class="src-cite" style="border:0;background:none;padding:0">Released 2026-09-08.</p>
+
+      <span class="chg-label added">Added</span>
+      <ul>
+        <li><strong>Reasoner, ABox realization.</strong> Individuals now participate in the saturation graph, so inferred class membership propagates to instances (reasoner-02).</li>
+        <li><strong>Reasoner, CR7 role hierarchy.</strong> <code>SubObjectPropertyOf</code> axioms are imported, persisted (format v11), and reasoned; a related fact along a sub-property is inferred along its super-property (reasoner-05).</li>
+        <li><strong>Reasoner, structural normalizer</strong> for normalization completeness (reasoner-04), and a <strong>per-rule EL differential oracle</strong> in CI (reasoner-08).</li>
+        <li><strong>Reasoner, loud incompleteness.</strong> Fragment counters, <code>GET /reasoner/fragment</code>, and a conjunction-gap flag report exactly which axioms were skipped instead of silently ignoring them (reasoner-07).</li>
+        <li><strong>Embedding cache.</strong> A <code>CachedEmbedder</code> on the live path with memory accounting, <code>[cache.embedding]</code> configuration, and <code>/metrics</code> + <code>/admin/memory</code> stats, <strong>enabled by default</strong> (embcache-02…06).</li>
+        <li><strong>MCP security.</strong> Inbound authentication enforcement and an exposure gate for the MCP server, plus copy-paste client config on key mint (mcp-sec-01/02).</li>
+        <li><strong>Whole-database snapshots.</strong> Full-fidelity <code>.oxdb-bundle</code> backup/restore, and live-server <code>POST /admin/import</code> · <code>GET /admin/export</code> with boot-time promotion and a working Restore/Export in the web UI Data page (snapimport-00/01).</li>
+      </ul>
+
+      <span class="chg-label changed">Changed</span>
+      <ul>
+        <li><strong>Expressivity claim tightened.</strong> The reasoner is now documented as <strong>OWL&nbsp;2 EL&perp;</strong> (a subset of EL++); the aspirational &ldquo;EL++&rdquo; label was removed and a claims gate added (reasoner-11).</li>
+        <li><strong>MCP tool count corrected to 12</strong> (documentation drift fixed) (mcp-sec-03).</li>
+        <li><strong>Single-file backup refuses lossy runs by default</strong>: <code>POST /backup</code> returns <code>422 BACKUP_WOULD_LOSE_DATA</code> when paged documents or KGE models would be dropped; pass <code>allow_partial</code> to override (snapimport-00).</li>
+        <li>The Node SDK (<code>@oxiddb/node</code>) was bumped to 0.9.6 in lockstep with the server. The Web SDK stayed at 0.9.4 for this release; it and the other language SDKs caught up to 0.9.7 in the sdk-sync work (see the 0.9.7 notes above).</li>
+      </ul>
+
+      <span class="chg-label fixed">Fixed</span>
+      <ul>
+        <li><strong>Fuzzing.</strong> The <code>dict_decode</code> fuzz target is hardened: a hostile <code>next_id</code> could burn the fuzz clock; the slot walk is now capped.</li>
+      </ul>
+
+      <h2>0.9.5 <span class="ver-badge blue">Older</span></h2>
+      <p class="src-cite" style="border:0;background:none;padding:0">Released 2026-09-05.</p>
+
+      <span class="chg-label added">Added</span>
+      <ul>
+        <li><strong>Ingest, EL&perp; clash-at-close gate.</strong> An opt-in <code>validate_consistency</code> flag makes a bulk import into an <code>auto_type</code> collection reject the whole batch atomically if it would make the ontology inconsistent (ING-5).</li>
+        <li><strong>Ingest benchmarks.</strong> A cross-component equivalence gate and a mixed document+vector+ontology ingest-timing backbone (ing-08, ing-09).</li>
+        <li><strong>High availability, cheap wins.</strong> The server now honours <code>oxd.toml</code> group-commit knobs, with a nightly determinism gate.</li>
+        <li><strong>Internationalisation.</strong> The whole web-next UI is translated (English + Dutch), plus a Simplified Chinese (zh) locale.</li>
+      </ul>
+
+      <span class="chg-label fixed">Fixed</span>
+      <ul>
+        <li><strong>Replication determinism.</strong> Deterministic HNSW levels + re-election, a canonical free-list, and two-node WAL-replay determinism oracles (repl-01…05).</li>
+        <li><strong>KGE ModelStore replica gap</strong>: trained models are now reproduced on replicas (repl-06).</li>
+        <li><strong><code>delete_individual</code> SQ8 pending</strong> deletion path corrected.</li>
+        <li><strong>Integrity gates.</strong> SQ8 + binary dirty-read regression gates added (integrity-01).</li>
+      </ul>
+
+      <h2>0.9.4 and earlier</h2>
+      <p>0.9.4 (2026-09-01) and prior releases established the core: the shared <code>Term</code> model, the OWL&nbsp;EL&perp; reasoner, off-RAM cold-f32 vectors, the JSON document store and ontology bridge, transactions, authentication, and the SDK family. Full commit history lives on <a href="https://github.com/vince-kr/Oxid-DB">GitHub</a>.</p>
+
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body"><span class="co-title">How versions map to your deployment</span>
+          Installation and upgrades are <a href="access.html">managed for you</a> while Oxid-DB is closed-source, so you are normally on the current release (0.9.8). The version selector and this changelog exist so you can tell exactly which behaviour a given endpoint has.</div>
+      </div>
+
+      <div class="pager">
+        <a href="storage.html"><span class="dir">← Previous</span><span class="ttl">Storage &amp; Durability</span></a>
+        <a class="next" href="index.html"><span class="dir">Next →</span><span class="ttl">Introduction</span></a>
+      </div>
+
+      <div class="article-footer">
+        <button class="ghost-btn" id="copyMarkdown">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy page as Markdown
+        </button>
+        <div class="spacer"></div>
+        <span>Oxid-DB 0.9.8 · Built with Rust</span>
+      </div>
+    </main>
+
+    <!-- ============================ TOC (auto-filled by docs.js) -->
+    <aside class="toc" aria-label="On this page">
+      <div class="toc-title">On this page</div>
+      <nav id="tocNav"></nav>
+    </aside>
+  </div>
+
+  <!-- ==================================================== SITE FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="Oxid-DB home">
+          <svg class="logo-svg" style="height:28px" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <g>
+              <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+              <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+              <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+              <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+              <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+              <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+              <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+              <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+              <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+              <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+            </g>
+          </svg>
+        </a>
+        <p>A Rust engine that unifies ontology reasoning and vector search in one system.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Docs</h4>
+          <a href="quickstart.html">Quick Start</a>
+          <a href="oxql.html">OxQL</a>
+          <a href="api.html">HTTP API</a>
+          <a href="sdks.html">SDKs</a>
+        </div>
+        <div class="footer-col">
+          <h4>Concepts</h4>
+          <a href="ontologies.html">Ontologies</a>
+          <a href="vectors.html">Vectors</a>
+          <a href="hybrid-queries.html">Hybrid Queries</a>
+          <a href="kge.html">Link Prediction</a>
+        </div>
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="access.html">Access &amp; Hosting</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="storage.html">Storage</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Oxid-DB · Documentation v0.9.8</div>
+  </footer>
+
+  <!-- ==================================================== SEARCH MODAL -->
+  <div class="overlay" id="searchOverlay">
+    <div class="search-modal" role="dialog" aria-modal="true" aria-label="Search documentation">
+      <div class="search-input-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Search documentation…" autocomplete="off" spellcheck="false" />
+        <span class="kbd" style="font-family:var(--font-mono);font-size:11px;border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--muted)">Esc</span>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+      <div class="search-foot">
+        <span><span class="kbd">↑</span> <span class="kbd">↓</span> navigate</span>
+        <span><span class="kbd">↵</span> open</span>
+        <span><span class="kbd">esc</span> close</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/highlight.min.js" defer></script>
+  <script src="assets/docs.js" defer></script>
+</body>
+</html>

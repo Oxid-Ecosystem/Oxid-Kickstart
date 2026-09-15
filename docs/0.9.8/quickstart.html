@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Start: Oxid-DB Documentation (0.9.8)</title>
+  <meta name="description" content="From a running managed endpoint to your first ontology, vector, and hybrid query in minutes: the fastest path into Oxid-DB." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="mask-icon" href="favicon.svg" color="#143f61" />
+
+  <!-- Prevent theme flash: apply stored theme before first paint -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('oxid-theme') || 'system';
+        var resolved = stored === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : stored;
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme-pref', stored);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+
+  <!-- ==================================================== HEADER -->
+  <header class="header">
+    <button class="icon-btn hamburger" id="hamburger" aria-label="Open navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <a class="brand" href="index.html" aria-label="Oxid-DB documentation home">
+      <svg class="logo-svg" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <g>
+          <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+          <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+          <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+          <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+          <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+          <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+          <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+          <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+          <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+          <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+        </g>
+      </svg>
+      <span class="brand-sub">Docs</span>
+    </a>
+
+    <div class="header-spacer"></div>
+
+    <button class="search-trigger" id="searchTrigger" aria-label="Search documentation">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <span class="st-label">Search documentation…</span>
+      <span class="kbd">/</span>
+    </button>
+
+    <div class="dropdown-wrap">
+      <button class="ctrl" id="versionBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="ctrl-label">Version</span>
+        <strong style="color:var(--text)">0.9.8</strong>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="dropdown" id="versionMenu" role="menu">
+        <a class="dropdown-item" href="../0.9.8/index.html" aria-current="true">0.9.8 <span class="tag current">Current</span></a>
+        <a class="dropdown-item" href="../0.9.7/index.html">0.9.7 <span class="tag maintained">Previous</span></a>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme" aria-haspopup="true" aria-expanded="false">
+        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
+      </button>
+      <div class="dropdown" id="themeMenu" role="menu">
+        <button class="dropdown-item" data-theme-set="light">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          Light <span class="check" data-check="light">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="dark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          Dark <span class="check" data-check="dark">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="system">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          System <span class="check" data-check="system">✓</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- ==================================================== SHELL -->
+  <div class="shell">
+
+    <div class="version-banner">
+      <span class="dot">●</span>
+      <span>You're reading the docs for <strong>Oxid-DB 0.9.8</strong>, the current release. Older versions are available from the version selector.</span>
+    </div>
+
+    <!-- ============================ SHARED SIDEBAR (do not edit per-page; docs.js marks the active link) -->
+    <nav class="sidebar" id="sidebar" aria-label="Documentation">
+      <div class="nav-group">
+        <div class="nav-group-label">Getting Started</div>
+        <a class="nav-item" href="index.html">Introduction</a>
+        <a class="nav-item" href="quickstart.html">Quick Start</a>
+        <a class="nav-item" href="access.html">Access &amp; Hosting</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Core Concepts</div>
+        <a class="nav-item" href="ontologies.html">Ontologies</a>
+        <a class="nav-item" href="reasoning.html">Reasoning (OWL 2 EL&perp;)</a>
+        <a class="nav-item" href="vectors.html">Vector Search</a>
+        <a class="nav-item" href="hybrid-queries.html">Hybrid Queries <span class="badge">core</span></a>
+        <a class="nav-item" href="scoring.html">Scoring &amp; Ranking</a>
+        <a class="nav-item" href="kge.html">Link Prediction (KGE)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">OxQL Query Language</div>
+        <a class="nav-item" href="oxql.html">OxQL Overview</a>
+        <a class="nav-item" href="documents-queries.html">Querying Documents</a>
+        <a class="nav-item" href="aggregation.html">Aggregation</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Document Store</div>
+        <a class="nav-item" href="documents.html">Overview</a>
+        <a class="nav-item" href="documents-insert.html">Inserting &amp; Bulk Loading</a>
+        <a class="nav-item" href="documents-indexing.html">Indexing &amp; Schema</a>
+        <a class="nav-item" href="ontology-bridge.html">The Ontology Bridge</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Server &amp; SDKs</div>
+        <a class="nav-item" href="api.html">HTTP API</a>
+        <a class="nav-item" href="sdks.html">SDKs &amp; Clients</a>
+        <a class="nav-item" href="transactions.html">Transactions</a>
+        <a class="nav-item" href="mcp.html">MCP Integration</a>
+        <a class="nav-item" href="web-ui.html">Web UI</a>
+        <a class="nav-item" href="authentication.html">Authentication</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Operations</div>
+        <a class="nav-item" href="operations.html">Install, CLI &amp; Settings</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Architecture</div>
+        <a class="nav-item" href="architecture.html">System Design</a>
+        <a class="nav-item" href="storage.html">Storage &amp; Durability</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Reference</div>
+        <a class="nav-item" href="changelog.html">Changelog</a>
+      </div>
+    </nav>
+
+    <!-- ============================ ARTICLE: the ONLY region a page fills -->
+    <main class="article">
+      <div class="breadcrumb"><a href="index.html">Docs</a> / Getting Started / <span>Quick Start</span></div>
+
+      <h1>Quick Start</h1>
+      <p class="lead">Go from a running endpoint to your first ontology, vectors, and hybrid query (reasoning and similarity in one statement) in minutes.</p>
+
+      <p>This walkthrough builds a tiny beverage ontology, inserts a handful of individuals with toy vectors, runs the reasoner, and finishes with a <strong>hybrid query</strong> that combines a logical <code>IS-A</code> filter with a vector <code>NEAR</code> ranking. Every code sample is runnable against a stock instance; pick your language on each tab. The base URL throughout is <code>https://85cfad134a4a.oxid-db.com</code>. Swap in your own endpoint if it differs.</p>
+
+      <div class="callout managed">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div class="co-body">
+          <span class="co-title">Managed while Oxid-DB is closed-source</span>
+          While Oxid-DB is closed-source, <strong>installation, provisioning, and the database runtime are managed for you</strong>: you receive a ready-to-use endpoint and connect with a client below. When Oxid-DB opens up, this documentation will expand with in-depth guides for <strong>self-hosting, CLI commands, and database settings</strong>.
+        </div>
+      </div>
+
+      <p>This page assumes you already have a running instance. If you don't yet, see <a href="access.html">Access &amp; Hosting</a> for how to get an endpoint (and a token, when authentication is enabled).</p>
+      <p>Prefer to explore before writing any data? On an empty database the <a href="web-ui.html">Web UI</a> offers a one-click <strong>load-a-demo</strong> modal; the <strong>Tech Concepts (Vectors Only)</strong> demo <span class="ver-badge">New in 0.9.8</span> is the fastest way to try semantic search, and the other two show reasoning and hybrid queries on real vectors.</p>
+
+      <ol class="steps">
+
+        <li>
+          <h3>Confirm your endpoint is live</h3>
+          <p>Before anything else, check that the instance is up and ready to serve. The readiness probe returns <code>200</code> when the database is loaded and consistent (an empty, freshly-started database is <em>also</em> ready: it only reports not-ready while draining on shutdown or when a known inconsistency exists).</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s https://85cfad134a4a.oxid-db.com/ready</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    status = db.ready()
+    print(status.get("ready"))</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>const r = await db.ready();
+if (r.status === "ready") {
+  console.log(`up ${r.uptime_seconds}s, ${r.checks.individuals} individuals`);
+} else {
+  console.warn("not ready yet: run classify() first");
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>r, err := client.Ready(ctx)
+if err != nil {
+	log.Fatalf("ready: %v", err)
+}
+// r.Status is "ready" (200) or "not_ready" (503).
+if r.Status != "ready" {
+	log.Printf("not ready yet: classified=%v consistent=%v",
+		r.Checks.ClassificationCurrent, r.Checks.Consistent)
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>Health.ReadyResponse r = oxid.ready();
+if (!"ready".equals(r.status())) {
+    // r.checks() carries databaseLoaded / classificationCurrent / consistent
+    oxid.classify();   // e.g. classify to become ready
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>$ready = $oxid-&gt;ready();                         // GET /ready (200 or 503 both parsed)
+echo $ready-&gt;status, "\n";                       // "ready" | "not_ready"
+echo $ready-&gt;version, "\n";
+printf("uptime: %.1fs\n", $ready-&gt;uptimeSeconds);</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>ReadyResponse ready = await oxid.ReadyAsync();
+Console.WriteLine($"{ready.Status}: {ready.Checks.Classes} classes, " +
+                  $"{ready.Checks.Individuals} individuals, classified={ready.Checks.ClassificationCurrent}");</code></pre>
+  </div>
+</div>
+
+          <p>Each SDK constructs a client from the base URL first. See <a href="sdks.html">SDKs &amp; Clients</a> for the exact import and constructor per language.</p>
+        </li>
+
+        <li>
+          <h3>Define a tiny ontology</h3>
+          <p>An ontology is your schema-plus-rules layer: <strong>classes</strong> (categories like <code>Beer</code>), <strong>individuals</strong> (instances like <code>Heineken</code>), and <strong>axioms</strong> (rules relating them). We start with two subclass axioms. A subclass axiom is an <strong>IS-A</strong> rule written <code>Pilsner &sqsubseteq; Beer</code> ("every Pilsner is a Beer"); on the wire the child is <code>sub</code> and the parent is <code>sup</code>.</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/subclass \
+  -H 'Content-Type: application/json' \
+  -d '{"sub":"Pilsner","sup":"Beer"}'</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    db.add_subclass("Pilsner", "Beer")
+    db.add_subclass("Stout", "Beer")</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Pilsner ⊑ Beer, Stout ⊑ Beer  (sub is the child, sup the parent)
+await db.addSubclass({ sub: "Pilsner", sup: "Beer" });
+await db.addSubclass({ sub: "Stout", sup: "Beer" });</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>for _, sc := range []oxid.SubclassRequest{
+	{Sub: "Pilsner", Sup: "Beer"},
+	{Sub: "Stout", Sup: "Beer"},
+} {
+	if err := client.AddSubclass(ctx, sc); err != nil {
+		log.Fatalf("subclass %s ⊑ %s: %v", sc.Sub, sc.Sup, err)
+	}
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Pilsner ⊑ Beer  (sub, sup)
+oxid.addSubclass(new Mutation.SubclassRequest("Pilsner", "Beer"));
+oxid.addSubclass(new Mutation.SubclassRequest("Stout", "Beer"));</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>use OxidDb\Client\Model\SubclassRequest;
+
+$oxid-&gt;addSubclass(new SubclassRequest('Beer', 'Beverage'));    // Beer ⊑ Beverage
+$oxid-&gt;addSubclass(new SubclassRequest('Pilsner', 'Beer'));     // Pilsner ⊑ Beer</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Pilsner ⊑ Beer, Stout ⊑ Beer
+await oxid.AddSubclassAsync(new SubclassRequest("Pilsner", "Beer"));
+await oxid.AddSubclassAsync(new SubclassRequest("Stout", "Beer"));</code></pre>
+  </div>
+</div>
+
+          <p>Now add a <strong>disjointness</strong> axiom. Disjointness says two classes can share no members: nothing is both a <code>Beer</code> and a <code>Wine</code>. This is what lets the reasoner later reject impossible facts. The two classes are sent as fields <code>a</code> and <code>b</code>.</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/disjoint \
+  -H 'Content-Type: application/json' \
+  -d '{"a":"Beer","b":"Wine"}'</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    db.add_disjoint("Beer", "Wine")</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Nothing is both a Beer and a Wine.
+await db.addDisjoint({ a: "Beer", b: "Wine" });</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Beer and Wine are disjoint: nothing can be both.
+if err := client.AddDisjoint(ctx, oxid.DisjointRequest{A: "Beer", B: "Wine"}); err != nil {
+	log.Fatalf("disjoint: %v", err)
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Beer and Wine are disjoint
+oxid.addDisjoint(new Mutation.DisjointRequest("Beer", "Wine"));</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>use OxidDb\Client\Model\DisjointRequest;
+
+$oxid-&gt;addDisjoint(new DisjointRequest('Beer', 'Wine'));   // POST /disjoint: Beer ⊓ Wine = ⊥</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// A beverage cannot be both a Beer and a Wine.
+await oxid.AddDisjointAsync(new DisjointRequest("Beer", "Wine"));</code></pre>
+  </div>
+</div>
+
+          <p>That gives us: <code>Pilsner &sqsubseteq; Beer</code>, <code>Stout &sqsubseteq; Beer</code>, and <code>Beer</code> disjoint from <code>Wine</code>. We never declared <code>Wine</code> explicitly. Naming it in an axiom is enough for it to exist as a class. Learn more on the <a href="ontologies.html">Ontologies</a> page.</p>
+        </li>
+
+        <li>
+          <h3>Insert individuals with vectors</h3>
+          <p>Now add some instances. Each individual carries a <strong>class</strong> (its most specific type) and an optional <strong>vector</strong>, here a 4-dimensional toy embedding like <code>[0.4, 0.2, 0.1, 0.4]</code>. The vector's length must match the target collection's dimensionality. Insert <code>Heineken</code> as a <code>Pilsner</code> and <code>Guinness</code> as a <code>Stout</code>.</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/insert \
+  -H 'Content-Type: application/json' \
+  -d '{"iri":"Heineken","class":"Pilsner","vector":[0.4,0.2,0.1,0.4]}'</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    res = db.insert("Heineken", "Pilsner", vector=[0.4, 0.2, 0.1, 0.4])
+    # res: {"iri": "Heineken", ...}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Identity is `individual` (or alias `iri`); membership is `class` (or `classes[]`).
+await db.insert({ individual: "Heineken", class: "Pilsner", vector: [0.4, 0.2, 0.1, 0.4] });
+await db.insert({ iri: "Guinness", class: "Stout", vector: [0.9, 0.3, 0.0, 0.7] });</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>res, err := client.Insert(ctx, oxid.InsertRequest{
+	Individual: "PilsnerUrquell",
+	Class:      "Pilsner",
+	Vector:     []float64{0.9, 0.1, 0.0, 0.2}, // 4-dim
+})
+if err != nil {
+	log.Fatalf("insert: %v", err)
+}
+_ = res</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Simple: individual + single class (no vector)
+oxid.insert(Mutation.InsertRequest.of("Heineken", "Pilsner"));
+
+// Full form: individual + class + 4-dim vector into a named collection
+oxid.insert(new Mutation.InsertRequest(
+        "Guinness", null, "Stout", null, null,
+        new double[] {0.1, 0.2, 0.3, 0.4}, "beverages"));</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>use OxidDb\Client\Model\InsertRequest;
+
+$res = $oxid-&gt;insert(new InsertRequest(
+    'Heineken',
+    'Pilsner',
+    vector: [0.6, 0.3, 0.1, 0.6],
+    collection: 'demo_beers',
+));
+echo $res-&gt;ok ? "inserted\n" : "failed\n";</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Positional (single class): emits {"individual","class",...}
+OkResponse ok = await oxid.InsertAsync(new InsertRequest(
+    "Heineken", "Pilsner",
+    Vector: new[] { 0.9, 0.1, 0.5, 0.2 }));
+
+// Multi-class via the aliases: emits {"iri","classes":[...]}
+await oxid.InsertAsync(new InsertRequest(
+    Individual: null, Class: null,
+    Iri: "Guinness", Classes: new List&lt;string&gt; { "Stout" },
+    Vector: new[] { 0.1, 0.8, 0.3, 0.4 }));</code></pre>
+  </div>
+</div>
+
+          <div class="callout note">
+            <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <div class="co-body"><span class="co-title">One shared identity space</span>
+            Classes, individuals, and their vectors all live in one interned identifier space: every name becomes a single <code>Term(u32)</code>. Because the reasoner's class hierarchy and the vector index refer to the same integer IDs, a hybrid query needs no join step to line the two sides up.</div>
+          </div>
+        </li>
+
+        <li>
+          <h3>Run classification</h3>
+          <p>Classification runs the reasoner over your axioms and facts. It computes the transitive subclass closure and <strong>propagates types upward</strong>: because <code>Heineken</code> is a <code>Pilsner</code> and <code>Pilsner &sqsubseteq; Beer</code>, the reasoner infers <code>Heineken : Beer</code>, even though you never asserted that directly. It also checks <strong>consistency</strong>: if any individual were forced into two disjoint classes, the response would report a violation.</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/classify</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    result = db.classify()
+    print("consistent:", result.get("consistent"))</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>const c = await db.classify();
+if (!c.consistent) {
+  console.error(`inconsistent: ${c.violations} violation(s)`, c.violation_witnesses);
+} else {
+  console.log("consistent", c.coherent ? "and coherent" : "");
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>cls, err := client.Classify(ctx)
+if err != nil {
+	log.Fatalf("classify: %v", err)
+}
+log.Printf("consistent=%v coherent=%v violations=%d",
+	cls.Consistent, cls.Coherent, cls.Violations)</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>Ops.ClassifyResponse cl = oxid.classify();
+if (cl.ok() &amp;&amp; cl.consistent()) {
+    // reasoner ran; inferred classes are now available on individuals
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>$classify = $oxid-&gt;classify();                       // POST /classify
+printf("consistent=%s coherent=%s violations=%d\n",
+    $classify-&gt;consistent ? 'true' : 'false',
+    $classify-&gt;coherent   ? 'true' : 'false',
+    $classify-&gt;violations,
+);</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>ClassifyResponse res = await oxid.ClassifyAsync();
+Console.WriteLine($"ok={res.Ok} consistent={res.Consistent} " +
+                  $"coherent={res.Coherent} violations={res.Violations}");</code></pre>
+  </div>
+</div>
+
+          <p>After this call, both <code>Heineken</code> (a Pilsner) and <code>Guinness</code> (a Stout) are inferred to be <code>Beer</code>. Classification is triggered automatically on the first query if it is stale, so you can often skip the explicit call, but running it here makes the inference (and any inconsistency) explicit. See <a href="reasoning.html">Reasoning (OWL 2 EL&perp;)</a> for exactly which inferences you get.</p>
+        </li>
+
+        <li>
+          <h3>Query by inferred class</h3>
+          <p>Queries are written in <strong>OxQL</strong>. Ask for everything that is a <code>Beer</code>. The magic word is <strong>inference</strong>: <code>IS-A Beer</code> returns members of every subclass of <code>Beer</code>, transitively, so both <code>Heineken</code> and <code>Guinness</code> come back even though neither was asserted as a <code>Beer</code> directly.</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/query \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"FIND ?x WHERE ?x IS-A Beer"}'</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    page = db.query("FIND ?x WHERE ?x IS-A Beer")
+    for hit in page.get("results", []):
+        print(hit["iri"])</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>const page = await db.query({ query: "FIND ?x WHERE ?x IS-A Beer" });
+console.log(page.results.map((r) =&gt; r.iri));
+console.log(page.total_count);</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>res, err := client.Query(ctx, oxid.QueryRequest{
+	Query: "FIND ?x WHERE ?x IS-A " + oxid.Quote("Beer"),
+})
+if err != nil {
+	log.Fatalf("query: %v", err)
+}
+log.Printf("matched %d (showing %d)", res.TotalCount, len(res.Results))
+for _, hit := range res.Results {
+	log.Println(" -", hit.IRI)
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>Query.QueryResponse page = oxid.query(
+        Query.QueryRequest.of("FIND ?x WHERE ?x IS-A " + Oxql.quote("Beer")));
+for (Query.QueryHit hit : page.results()) {
+    System.out.println(hit.iri());
+}
+String next = page.nextCursor();              // null on the last page</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>use OxidDb\Client\Model\QueryRequest;
+
+$page = $oxid-&gt;query(new QueryRequest('FIND ?x WHERE ?x IS-A Beer'));
+echo "total: {$page-&gt;totalCount}\n";
+foreach ($page-&gt;results as $hit) {
+    echo "  {$hit-&gt;iri}", $hit-&gt;score !== null ? " ({$hit-&gt;score})" : "", "\n";
+}</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>QueryResponse page = await oxid.QueryAsync(
+    new QueryRequest("FIND ?x WHERE ?x IS-A " + Oxql.Quote("Beer")));
+Console.WriteLine($"{page.Results.Count} of {page.TotalCount} hit(s)");
+foreach (QueryHit hit in page.Results)
+{
+    Console.WriteLine($"  {hit.Iri} (score={hit.Score})");
+}</code></pre>
+  </div>
+</div>
+
+          <p>Every OxQL statement starts with <code>FIND ?x</code> and a <code>WHERE</code> stage. If you omit <code>LIMIT</code>, the default page size is <strong>10</strong> rows. There is no separate wine here to return, and even if there were, <code>IS-A Beer</code> would exclude it, because <code>Beer</code> and <code>Wine</code> are disjoint. The full language is on the <a href="oxql.html">OxQL Overview</a>.</p>
+        </li>
+
+        <li>
+          <h3>Combine reasoning and vectors: a hybrid query</h3>
+          <p>Here is the payoff. A hybrid query fuses the logical filter <code>IS-A Beer</code> with a vector stage, <code>NEAR ?x TO [...]</code>, in a single OxQL statement: reasoning and similarity in one pass. The rows come back ranked by vector <code>score</code>, but restricted to beers.</p>
+
+<div class="code-tabs" data-tabs>
+  <div class="code-tabs-bar" role="tablist">
+    <button class="code-tab" data-lang="curl">cURL</button>
+    <button class="code-tab" data-lang="python">Python</button>
+    <button class="code-tab" data-lang="typescript">TypeScript</button>
+    <button class="code-tab" data-lang="go">Go</button>
+    <button class="code-tab" data-lang="java">Java</button>
+    <button class="code-tab" data-lang="php">PHP</button>
+    <button class="code-tab" data-lang="csharp">C#</button>
+  </div>
+  <div class="code-panel" data-lang="curl">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>curl -s -X POST https://85cfad134a4a.oxid-db.com/query \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"FIND ?x WHERE ?x IS-A Beer AND NEAR ?x TO [0.9,0.1,0.5] LIMIT 5"}'</code></pre>
+  </div>
+  <div class="code-panel" data-lang="python">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>with OxidDB("https://85cfad134a4a.oxid-db.com") as db:
+    # (1) literal query vector (dims must match the collection)
+    hits = db.query("FIND ?x WHERE NEAR ?x TO [0.4, 0.2, 0.1, 0.4] LIMIT 5")
+    for h in hits.get("results", []):
+        print(h["iri"], h.get("score"))
+
+    # (2) nearest neighbours of an existing individual
+    sim = db.individual_similar("Heineken", k=3, collection="default")
+    print([h["iri"] for h in sim.get("results", [])])</code></pre>
+  </div>
+  <div class="code-panel" data-lang="typescript">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// 1) OxQL NEAR over /query: hybrid-capable (combine with IS-A). Rows carry `score`.
+const near = await db.query({
+  query: "FIND ?x WHERE ?x IS-A Beer AND NEAR ?x TO [0.9, 0.1, 0.5, 0.7] LIMIT 5",
+});
+for (const hit of near.results) console.log(hit.iri, hit.score);
+
+// 2) By reference individual: top-k neighbors of an existing IRI.
+const sim = await db.individualSimilar("Guinness", { k: 3, collection: "default" });
+for (const hit of sim.results) console.log(hit.iri, hit.score);</code></pre>
+  </div>
+  <div class="code-panel" data-lang="go">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Hybrid: Beers nearest a 4-dim probe vector, top 5.
+oxql := oxid.NewQueryBuilder().
+	Find("x").
+	IsA("Beer").
+	Near([]float64{0.9, 0.1, 0.0, 0.2}).
+	Limit(5).
+	ToOxql()
+res, err := client.Query(ctx, oxid.QueryRequest{Query: oxql})
+if err != nil {
+	log.Fatalf("vector search: %v", err)
+}
+for _, hit := range res.Results {
+	if hit.Score != nil {
+		log.Printf("%s score=%.4f", hit.IRI, *hit.Score)
+	}
+}
+
+// Neighbors of a known individual:
+sim, err := client.IndividualSimilar(ctx, "PilsnerUrquell",
+	&amp;oxid.SimilarOpts{K: 5, Collection: "default"})
+_, _ = sim, err</code></pre>
+  </div>
+  <div class="code-panel" data-lang="java">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// 1) By reference IRI: 3 nearest neighbours of Heineken in the default collection
+Individuals.IndividualSimilarResponse sim = oxid.individualSimilar("Heineken", 3, null);
+for (Individuals.SimilarHit hit : sim.results()) {
+    System.out.println(hit.iri() + " " + hit.score());
+}
+
+// 2) By raw vector: via OxQL NEAR
+String oxql = new QueryBuilder()
+        .find("x").isA("Beer")
+        .near(new double[] {0.9, 0.1, 0.5, 0.2})
+        .limit(5)
+        .toOxql();
+Query.QueryResponse hits = oxid.query(Query.QueryRequest.of(oxql));</code></pre>
+  </div>
+  <div class="code-panel" data-lang="php">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>use OxidDb\Client\Model\QueryRequest;
+
+// 1) OxQL NEAR over POST /query: literal query vector, hybrid-capable.
+$near = $oxid-&gt;query(new QueryRequest(
+    'FIND ?x WHERE ?x IS-A Beer AND NEAR ?x TO [0.9, 0.1, 0.5, 0.2] LIMIT 5'
+));
+foreach ($near-&gt;results as $hit) {
+    printf("  %s  score=%s\n", $hit-&gt;iri, $hit-&gt;score);
+}
+
+// 2) By-reference nearest neighbours: GET /individuals/{iri}/similar
+$similar = $oxid-&gt;individualSimilar('Heineken', k: 3, collection: 'demo_beers');
+echo "reference={$similar-&gt;reference} collection={$similar-&gt;collection}\n";</code></pre>
+  </div>
+  <div class="code-panel" data-lang="csharp">
+    <button class="copy-btn tab-copy">Copy</button>
+    <pre><code>// Hybrid: a Beer near this 4-dim probe vector, top 5.
+string oxql = new QueryBuilder()
+    .Find("x").IsA("Beer").Near(new[] { 0.9, 0.1, 0.5, 0.2 }).Limit(5)
+    .ToOxql();
+QueryResponse hits = await oxid.QueryAsync(new QueryRequest(oxql));
+foreach (QueryHit hit in hits.Results)
+{
+    Console.WriteLine($"{hit.Iri}  score={hit.Score}");
+}
+
+// Nearest neighbours of an existing individual.
+IndividualSimilarResponse sim = await oxid.IndividualSimilarAsync("Heineken", k: 3);
+foreach (SimilarHit s in sim.Results)
+{
+    Console.WriteLine($"{s.Iri}  {s.Score}");
+}</code></pre>
+  </div>
+</div>
+
+          <p>In plain terms: the <code>IS-A Beer</code> filter is applied <em>during</em> the vector graph traversal, not bolted on afterwards: non-beers never enter the result heap, so a rare class doesn't collapse recall. That is <strong>filter-during-traversal</strong>, and it is the heart of Oxid-DB. The <a href="hybrid-queries.html">Hybrid Queries</a> page explains the planner strategies in detail.</p>
+
+          <div class="callout tip">
+            <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2h6c0-.8.4-1.5 1-2A7 7 0 0 0 12 2Z"/></svg>
+            <div class="co-body"><span class="co-title">Match your vector's length</span>
+            The literal vector in <code>NEAR ?x TO [...]</code> must have the same dimensionality as the collection you are searching. The examples use short toy vectors for readability; use whatever your collection was created with (real embeddings are commonly 384, 1024, or 1536-dimensional).</div>
+          </div>
+        </li>
+
+      </ol>
+
+      <h2>Where next</h2>
+      <p>You now have the full loop: define an ontology, insert vectors, classify, and query symbolically <em>and</em> semantically in one statement. Go deeper:</p>
+      <div class="grid">
+        <a class="card" href="reasoning.html"><h3>Reasoning (EL&perp;) →</h3><p>Exactly which inferences the OWL 2 EL&perp; reasoner gives you, and its honest limits.</p></a>
+        <a class="card" href="vectors.html"><h3>Vector Search →</h3><p>HNSW, distance metrics, quantization, and off-RAM cold storage.</p></a>
+        <a class="card" href="hybrid-queries.html"><h3>Hybrid Queries →</h3><p>Filter-during-traversal and how the planner picks a strategy.</p></a>
+        <a class="card" href="oxql.html"><h3>OxQL Overview →</h3><p>The full query grammar: IS-A, NEAR, LIKE, predicates, and aggregation.</p></a>
+        <a class="card" href="sdks.html"><h3>SDKs &amp; Clients →</h3><p>Install and construct a client in Python, TypeScript, Go, Java, PHP, or C#.</p></a>
+      </div>
+      <p>Documents can also carry a <code>GeoPoint</code> field, queryable with <code>WITHIN</code> radius filtering and <code>SORT DISTANCE</code> nearest-first ordering. See <a href="documents-queries.html">Querying Documents</a>.</p>
+
+      <div class="pager">
+        <a href="index.html"><span class="dir">← Previous</span><span class="ttl">Introduction</span></a>
+        <a class="next" href="access.html"><span class="dir">Next →</span><span class="ttl">Access &amp; Hosting</span></a>
+      </div>
+
+      <div class="article-footer">
+        <button class="ghost-btn" id="copyMarkdown">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy page as Markdown
+        </button>
+        <div class="spacer"></div>
+        <span>Oxid-DB 0.9.8 · Built with Rust</span>
+      </div>
+    </main>
+
+    <!-- ============================ TOC (auto-filled by docs.js) -->
+    <aside class="toc" aria-label="On this page">
+      <div class="toc-title">On this page</div>
+      <nav id="tocNav"></nav>
+    </aside>
+  </div>
+
+  <!-- ==================================================== SITE FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="Oxid-DB home">
+          <svg class="logo-svg" style="height:28px" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <g>
+              <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+              <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+              <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+              <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+              <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+              <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+              <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+              <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+              <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+              <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+            </g>
+          </svg>
+        </a>
+        <p>A Rust engine that unifies ontology reasoning and vector search in one system.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Docs</h4>
+          <a href="quickstart.html">Quick Start</a>
+          <a href="oxql.html">OxQL</a>
+          <a href="api.html">HTTP API</a>
+          <a href="sdks.html">SDKs</a>
+        </div>
+        <div class="footer-col">
+          <h4>Concepts</h4>
+          <a href="ontologies.html">Ontologies</a>
+          <a href="vectors.html">Vectors</a>
+          <a href="hybrid-queries.html">Hybrid Queries</a>
+          <a href="kge.html">Link Prediction</a>
+        </div>
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="access.html">Access &amp; Hosting</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="storage.html">Storage</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Oxid-DB · Documentation v0.9.8</div>
+  </footer>
+
+  <!-- ==================================================== SEARCH MODAL -->
+  <div class="overlay" id="searchOverlay">
+    <div class="search-modal" role="dialog" aria-modal="true" aria-label="Search documentation">
+      <div class="search-input-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Search documentation…" autocomplete="off" spellcheck="false" />
+        <span class="kbd" style="font-family:var(--font-mono);font-size:11px;border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--muted)">Esc</span>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+      <div class="search-foot">
+        <span><span class="kbd">↑</span> <span class="kbd">↓</span> navigate</span>
+        <span><span class="kbd">↵</span> open</span>
+        <span><span class="kbd">esc</span> close</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/highlight.min.js" defer></script>
+  <script src="assets/docs.js" defer></script>
+</body>
+</html>

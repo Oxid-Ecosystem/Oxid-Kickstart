@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Design: Oxid-DB Documentation (0.9.8)</title>
+  <meta name="description" content="How Oxid-DB is put together: the crate map, the shared Term(u32) identifier space that removes the seam between reasoning and vectors, the life of a query, and the layered engine." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="mask-icon" href="favicon.svg" color="#143f61" />
+
+  <!-- Prevent theme flash: apply stored theme before first paint -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('oxid-theme') || 'system';
+        var resolved = stored === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : stored;
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme-pref', stored);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+
+  <!-- ==================================================== HEADER -->
+  <header class="header">
+    <button class="icon-btn hamburger" id="hamburger" aria-label="Open navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <a class="brand" href="index.html" aria-label="Oxid-DB documentation home">
+      <svg class="logo-svg" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <g>
+          <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+          <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+          <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+          <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+          <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+          <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+          <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+          <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+          <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+          <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+        </g>
+      </svg>
+      <span class="brand-sub">Docs</span>
+    </a>
+
+    <div class="header-spacer"></div>
+
+    <button class="search-trigger" id="searchTrigger" aria-label="Search documentation">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <span class="st-label">Search documentation…</span>
+      <span class="kbd">/</span>
+    </button>
+
+    <div class="dropdown-wrap">
+      <button class="ctrl" id="versionBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="ctrl-label">Version</span>
+        <strong style="color:var(--text)">0.9.8</strong>
+        <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="dropdown" id="versionMenu" role="menu">
+        <a class="dropdown-item" href="../0.9.8/index.html" aria-current="true">0.9.8 <span class="tag current">Current</span></a>
+        <a class="dropdown-item" href="../0.9.7/index.html">0.9.7 <span class="tag maintained">Previous</span></a>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme" aria-haspopup="true" aria-expanded="false">
+        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
+      </button>
+      <div class="dropdown" id="themeMenu" role="menu">
+        <button class="dropdown-item" data-theme-set="light">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          Light <span class="check" data-check="light">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="dark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          Dark <span class="check" data-check="dark">✓</span>
+        </button>
+        <button class="dropdown-item" data-theme-set="system">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          System <span class="check" data-check="system">✓</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- ==================================================== SHELL -->
+  <div class="shell">
+
+    <div class="version-banner">
+      <span class="dot">●</span>
+      <span>You're reading the docs for <strong>Oxid-DB 0.9.8</strong>, the current release. Older versions are available from the version selector.</span>
+    </div>
+
+    <!-- ============================ SHARED SIDEBAR (do not edit per-page; docs.js marks the active link) -->
+    <nav class="sidebar" id="sidebar" aria-label="Documentation">
+      <div class="nav-group">
+        <div class="nav-group-label">Getting Started</div>
+        <a class="nav-item" href="index.html">Introduction</a>
+        <a class="nav-item" href="quickstart.html">Quick Start</a>
+        <a class="nav-item" href="access.html">Access &amp; Hosting</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Core Concepts</div>
+        <a class="nav-item" href="ontologies.html">Ontologies</a>
+        <a class="nav-item" href="reasoning.html">Reasoning (OWL 2 EL&perp;)</a>
+        <a class="nav-item" href="vectors.html">Vector Search</a>
+        <a class="nav-item" href="hybrid-queries.html">Hybrid Queries <span class="badge">core</span></a>
+        <a class="nav-item" href="scoring.html">Scoring &amp; Ranking</a>
+        <a class="nav-item" href="kge.html">Link Prediction (KGE)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">OxQL Query Language</div>
+        <a class="nav-item" href="oxql.html">OxQL Overview</a>
+        <a class="nav-item" href="documents-queries.html">Querying Documents</a>
+        <a class="nav-item" href="aggregation.html">Aggregation</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Document Store</div>
+        <a class="nav-item" href="documents.html">Overview</a>
+        <a class="nav-item" href="documents-insert.html">Inserting &amp; Bulk Loading</a>
+        <a class="nav-item" href="documents-indexing.html">Indexing &amp; Schema</a>
+        <a class="nav-item" href="ontology-bridge.html">The Ontology Bridge</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Server &amp; SDKs</div>
+        <a class="nav-item" href="api.html">HTTP API</a>
+        <a class="nav-item" href="sdks.html">SDKs &amp; Clients</a>
+        <a class="nav-item" href="transactions.html">Transactions</a>
+        <a class="nav-item" href="mcp.html">MCP Integration</a>
+        <a class="nav-item" href="web-ui.html">Web UI</a>
+        <a class="nav-item" href="authentication.html">Authentication</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Operations</div>
+        <a class="nav-item" href="operations.html">Install, CLI &amp; Settings</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Architecture</div>
+        <a class="nav-item" href="architecture.html">System Design</a>
+        <a class="nav-item" href="storage.html">Storage &amp; Durability</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Reference</div>
+        <a class="nav-item" href="changelog.html">Changelog</a>
+      </div>
+    </nav>
+
+    <!-- ============================ ARTICLE: the ONLY region a page fills -->
+    <main class="article">
+      <div class="breadcrumb"><a href="index.html">Docs</a> / Architecture / <span>System Design</span></div>
+
+      <h1>System Design</h1>
+      <p class="lead">How Oxid-DB is put together (a Rust workspace of focused crates layered around one engine), and why the reasoner, the vector index, and the document store all share a single identifier space. That shared space is what lets a hybrid query run in one pass with no glue code between the symbolic and the neural halves.</p>
+
+      <div class="callout note">
+        <svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body">
+          <span class="co-title"><span class="ver-badge">New in 0.9.8</span></span>
+          0.9.8 is a production-hardening release; the shape of the system is unchanged and no crate moved layers. Four things were added underneath: a <strong>durability latch</strong> shared by the WAL writer, group committer, and transaction manager that decides what happens when <code>fsync</code> itself fails; a new leaf crate, <code>oxd-io</code>, that puts an <strong>injectable clock and filesystem seam</strong> under every durability-critical write so disk faults can be tested rather than assumed; a <strong>restore drill</strong> that rehearses backup restore end-to-end; and a memory governor that <strong>names which figure drives admission</strong> (live-data estimate or real RSS). See the <a href="changelog.html">Changelog</a> for the full 0.9.7&nbsp;&rarr;&nbsp;0.9.8 difference.
+        </div>
+      </div>
+
+      <h2>The big idea</h2>
+      <p>Every named thing that enters Oxid-DB (a class, an individual, a property, a document, a vector's owner, a KGE entity) is interned once into a shared dictionary and represented internally by a single opaque <code>Term</code>, a 32-bit integer. The reasoner's class extents, the vector index's point identifiers, and the document store's row identities are all the <em>same</em> <code>Term</code> values, so a class extent computed by the reasoner <em>is</em> the candidate set for a vector search: no join table, no ID translation layer, no second namespace to reconcile. This one decision is what removes the <strong>seam</strong> that forces most stacks to bolt a vector database onto a graph engine and shuttle results across the boundary. Everything else in the workspace is organised around keeping that <code>Term</code> space authoritative and cheap to operate on.</p>
+      <p class="src-cite-row"><span class="src-cite">crates/oxd-core/src/term.rs</span> <span class="src-cite">crates/oxd-core/src/ontology.rs</span></p>
+      <div class="callout note"><svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="co-body"><span class="co-title">Note</span> A <code>Term</code> is not tagged as class-vs-individual. That distinction is membership in the ontology's <code>classes</code> / <code>individuals</code> bitsets, maintained as axioms are added. IDs <code>0..32</code> are reserved well-known terms (<code>owl:Thing</code> = <code>Term(0)</code>, <code>owl:Nothing</code> = <code>Term(1)</code>, <code>rdf:type</code> = <code>Term(2)</code>, …); user terms start at 32. The dictionary is persisted with the database, so IDs are stable across sessions.</div>
+      </div>
+
+      <h2>The crates</h2>
+      <p>Oxid-DB is a single Rust workspace. The crates split along clear responsibilities: a dependency-light core holds the shared spine, focused crates layer reasoning, vectors, documents, and query planning on top, the storage engine composes them behind one write path, and thin server / surface / tooling crates expose the result. A plain <code>cargo build</code> compiles the database-only default members; the agentic <code>oxd-surface-*</code> crates are an opt-in add-on and are excluded from that default build.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Crate</th><th>Responsibility</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="2"><strong>Core spine</strong></td></tr>
+            <tr>
+              <td><code>oxd-core</code></td>
+              <td>The shared spine: <code>Term(u32)</code> + the <code>TermDictionary</code>, the native ontology model (<code>Ontology</code>, <code>Axiom</code>, the EL-shaped <code>ClassExpr</code> AST), <code>TermBitSet</code>, the <code>Metric</code> enum, OWL import, and the version chains. Everything else depends on it; it depends on nothing in the workspace.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-config</code></td>
+              <td>Typed configuration and the environment / <code>oxd.toml</code> boundary: bind addresses, TLS, limits, sync policy, the fsync-failure policy, and the restore-drill schedule. No workspace dependencies.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-io</code> <span class="ver-badge">0.9.8</span></td>
+              <td>The <code>Clock</code> and <code>Filesystem</code> / <code>File</code> seam: minimal object-safe traits that production implements with a zero-overhead <code>std</code> passthrough (<code>StdFs</code>, <code>StdClock</code>) and tests implement with fault injection (fsync <code>EIO</code>, <code>ENOSPC</code>, a manual clock). Threaded through the WAL, checkpoint writes, and the cold-f32 spill so durability ordering is unchanged in production but every disk failure is now testable. A leaf crate, so <code>oxd-persist</code>, <code>oxd-vector</code>, and <code>oxd-storage</code> all depend on it.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-persist</code></td>
+              <td>Crash-safe persistence primitives: CRC-framed bincode with atomic, checksummed <code>save_with_checksum</code> / <code>load_with_checksum</code>, shared by the storage and auth layers. Its write funnels take the <code>oxd-io</code> filesystem seam, so a checkpoint write can be fault-injected.</td>
+            </tr>
+            <tr>
+              <td><code>owl2oxid</code> · <code>owl2oxid-core</code></td>
+              <td>A clean-room, permissively-licensed OWL parsing library (aliased <code>oxwl</code>) that backs OWL import, replacing the previously vendored copy.</td>
+            </tr>
+            <tr><td colspan="2"><strong>Query · reasoning · vectors · documents</strong></td></tr>
+            <tr>
+              <td><code>oxd-reasoner</code></td>
+              <td>The OWL 2 EL&perp; classifier and the fragment checker. Normalizes axioms, runs the completion-rule fixpoint (including CR8 for length-2 role chains and transitivity, on by default), and produces per-class extents as <code>TermBitSet</code>s plus a consistency / coherence verdict.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-vector</code></td>
+              <td>Vector search: HNSW graph index, SQ8 and binary quantization, the four distance metrics, the memory-mapped cold-f32 base for datasets larger than RAM, and recall measurement.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-document</code></td>
+              <td>The JSON document store: <code>Document</code> model (including the <code>GeoPoint</code> field type), a separate field dictionary, BTreeMap secondary indexes (equality + range), the opt-in spatial (grid) index, and bulk NDJSON load / export.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-query</code></td>
+              <td>OxQL: the pest parser (<code>oxql.pest</code>), the selectivity-driven planner and strategy selector, the executor, aggregation, reciprocal-rank fusion, and the query cache. Ties the reasoner, vector, and embed crates together.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-embed</code></td>
+              <td>The embedder trait plus adapters, FastEmbed (local ONNX), Ollama, and OpenAI, with a caching wrapper. Turns text into vectors for <code>NEAR "…"</code> and server-side embedding.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-train</code></td>
+              <td>Knowledge-graph embeddings: TransE and RotatE, the reasoner-vetted ReasonKGE loop, link prediction, and model persistence.</td>
+            </tr>
+            <tr><td colspan="2"><strong>Storage</strong></td></tr>
+            <tr>
+              <td><code>oxd-storage</code></td>
+              <td>The <code>Database</code> engine that composes everything: the write-ahead log, checkpoints, MVCC version primitives, the strict-2PL transaction manager, the ontology&harr;document bridge, bundle backup / restore, the restore drill, compaction, the durability latch (abort or poison on a failed <code>fsync</code>), and the memory governor.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-auth</code></td>
+              <td>Accounts, roles and permissions, sessions, API keys, and the audit log (Argon2id for passwords; sha256 for tokens). Persists to its own credential file.</td>
+            </tr>
+            <tr><td colspan="2"><strong>Server &amp; surface</strong></td></tr>
+            <tr>
+              <td><code>oxd-server</code></td>
+              <td>The axum HTTP server: the full JSON API, the embedded Vue web UI, the auth gate, TLS, and memory admission (which, as of 0.9.8, reports whether the live-data estimate or real RSS is driving its decision). A thin surface over the <code>Database</code>.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-surface-core</code> · <code>-cli</code> · <code>-mcp</code></td>
+              <td>The <strong>opt-in</strong> agentic add-on (excluded from the default build): a shared tool core, a command-line front-end, and an MCP server that exposes Oxid-DB's tools to AI agents.</td>
+            </tr>
+            <tr><td colspan="2"><strong>Tooling &amp; bindings</strong></td></tr>
+            <tr>
+              <td><code>oxd-cli</code></td>
+              <td>The <code>oxd</code> binary: serve, import, backup (including the restore drill), compact, check-fragment, recall-check, and the REPL.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-python</code></td>
+              <td>Embedded Python bindings: the engine in-process, not a network client.</td>
+            </tr>
+            <tr>
+              <td><code>oxd-okf</code></td>
+              <td>The OKF export format (read-only ontology-knowledge interchange).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-cite-row"><span class="src-cite">Cargo.toml</span> <span class="src-cite">crates/oxd-storage/src/lib.rs</span> <span class="src-cite">crates/oxd-surface-core/src/tools/mod.rs</span></p>
+
+      <h2>The life of a query</h2>
+      <p>A single OxQL statement travels a fixed path from HTTP request to JSON response. Following it end to end shows how the crates cooperate and where the shared <code>Term</code> space does its work. Trace a hybrid query, <code>FIND ?x WHERE ?x IS-A Beer AND NEAR ?x TO [0.9, 0.0, 0.0, 0.5] LIMIT 5</code>:</p>
+      <ol class="steps">
+        <li>
+          <h3>Parse the OxQL</h3>
+          <p><code>oxd-server</code> receives <code>POST /query</code> with the text in the <code>query</code> field and hands it to <code>oxd-query</code>. The pest grammar (<code>oxql.pest</code>) parses it into a <code>Query</code> AST: one result variable and a flat chain of stages: here an <code>IS-A</code> class stage and a <code>NEAR</code> vector stage. Invalid text returns a <code>400</code> with a <code>QUERY_ERROR</code> code before any work is done.</p>
+        </li>
+        <li>
+          <h3>Plan by selectivity</h3>
+          <p>The planner estimates how selective each stage is and chooses one of four strategies (logical-only, vector-only, <em>filter-then-search</em>, or <em>search-then-filter</em>) using System-R-style heuristics. A mis-estimate picks a slower plan, never a wrong answer. For a selective class filter it plans to push the class extent <em>into</em> the vector traversal.</p>
+        </li>
+        <li>
+          <h3>Build the reasoner candidate set</h3>
+          <p><code>oxd-reasoner</code> supplies the extent of <code>Beer</code> as a <code>TermBitSet</code>: every member of <code>Beer</code> <em>and all its subclasses, transitively</em> (Lager, Ale, Stout, Pilsner…), including individuals never asserted directly as <code>Beer</code>. Classification runs automatically first if it is stale. Because document / individual IDs are already <code>Term</code>s, this bitset needs no translation to be used as a filter.</p>
+        </li>
+        <li>
+          <h3>Vector traversal, filtered during the walk</h3>
+          <p><code>oxd-vector</code> runs the HNSW search with the bitset as a live filter: <strong>every</strong> graph node still steers the walk (routing quality is preserved), but <strong>only</strong> nodes whose <code>Term</code> is in the bitset enter the result heap. Nothing outside <code>Beer</code> is ever scored, so a rare class does not collapse recall. For a very selective filter the planner instead scans the bitset members directly; for a broad filter it over-samples then filters.</p>
+        </li>
+        <li>
+          <h3>Hydrate the results</h3>
+          <p>The surviving top-<em>k</em> <code>Term</code>s are resolved back to IRIs through the dictionary, and (when the request asks for it via <code>hydrate</code> or <code>PROJECT</code>) their data-property fields or document fields are inlined. Each row from a <code>NEAR</code> stage carries a <code>score</code>.</p>
+        </li>
+        <li>
+          <h3>Serialize to JSON</h3>
+          <p><code>oxd-server</code> returns the page as <code>{ "results": [ { "iri": …, "score": … } ], "total_count": … }</code>, with an opaque <code>next_cursor</code> when more rows remain. The whole path ran in one pass over one identifier space: no cross-system round-trip.</p>
+        </li>
+      </ol>
+      <p class="src-cite-row"><span class="src-cite">crates/oxd-query/src/oxql.pest</span> <span class="src-cite">crates/oxd-query/src/planner.rs · select_strategy</span> <span class="src-cite">crates/oxd-vector/src/hnsw.rs · search_layer_filtered</span></p>
+      <div class="callout tip"><svg class="co-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg>
+        <div class="co-body"><span class="co-title">Tip</span> A pure logical query skips step 4 (just enumerate the bitset); a pure vector query skips step 3 (no filter). The hybrid form uses both, which is the point of the engine. <a href="hybrid-queries.html">Hybrid Queries</a> walks the same query in depth, and <a href="oxql.html">OxQL Overview</a> covers the full grammar.</div>
+      </div>
+
+      <h2>How the layers compose</h2>
+      <p>Read top to bottom: a request enters through a surface, is planned and executed by the query layer, which calls into the three domain engines, all of which sit on the storage engine and, ultimately, on the one dictionary that gives every layer the same identifiers.</p>
+      <div class="code-block">
+        <div class="code-head"><span class="lang">layers</span><button class="copy-btn">Copy</button></div>
+        <pre><code>          HTTP · SDKs · MCP · embedded Python · CLI
+                            │
+        ┌───────────────────▼───────────────────┐
+        │  oxd-server  (axum: JSON API + web UI, │   surface
+        │              auth gate, TLS, admission)│
+        └───────────────────┬───────────────────┘
+                            │
+        ┌───────────────────▼───────────────────┐
+        │  oxd-query   (OxQL parse → plan →      │   query
+        │              execute → fuse → cache)   │
+        └──────┬──────────────┬──────────────┬───┘
+              │              │              │
+    ┌─────────▼───┐  ┌───────▼──────┐  ┌────▼─────────┐
+    │ oxd-reasoner│  │  oxd-vector  │  │ oxd-document │   domain
+    │  EL⊥ extents│  │ HNSW · SQ8 · │  │  JSON store ·│   engines
+    │ (TermBitSet)│  │  cold-f32    │  │  BTree index │
+    └─────────┬───┘  └───────┬──────┘  └────┬─────────┘
+              └──────────────┼──────────────┘
+                            │   (+ ontology↔document bridge)
+        ┌───────────────────▼───────────────────┐
+        │  oxd-storage (Database: WAL · MVCC ·   │   storage
+        │   strict-2PL txns · checkpoints ·      │
+        │   bridge · backup · memory governor)   │
+        └───────────────────┬───────────────────┘
+                            │
+        ┌───────────────────▼───────────────────┐
+        │  oxd-core  :  TermDictionary + Term(u32)│  dictionary
+        │  one shared identifier space for all    │  (the spine)
+        └────────────────────────────────────────┘</code></pre>
+      </div>
+      <p>Dependencies point downward: surfaces depend on the query and storage layers, which depend on the domain engines, which all depend on <code>oxd-core</code>, never the reverse. The core has no I/O and no workspace dependencies, so it is testable in isolation and every layer above it speaks the same <code>Term</code> vocabulary. The one other leaf is <code>oxd-io</code>, which sits beside the core rather than in the diagram: it is the single interception point through which the persistence, vector, and storage layers touch the disk and the clock, so production runs a plain <code>std</code> passthrough while tests can make any <code>fsync</code> fail. The <strong>ontology&harr;document bridge</strong> lives in <code>oxd-storage</code>: when a document collection is mapped to a class, each insert atomically becomes a typed individual with its properties (and optionally a vector), so ingested JSON lands directly in the reasoner's <code>Term</code> space and the same hybrid query works over it.</p>
+
+      <h2>Index types</h2>
+      <p>Three kinds of index sit over the shared <code>Term</code> space, each accelerating a different shape of query while never changing the answer a full scan would give:</p>
+      <div class="grid">
+        <div class="card">
+          <span class="chip neural">Neural</span>
+          <h3>HNSW vector index</h3>
+          <p>The approximate nearest-neighbor graph in <code>oxd-vector</code>: SQ8 / binary quantization for the resident graph and a memory-mapped cold-f32 base for datasets larger than RAM. Powers <code>NEAR</code> similarity ranking.</p>
+        </div>
+        <div class="card">
+          <span class="chip symbolic">Symbolic</span>
+          <h3>Ontology classifier</h3>
+          <p>The EL&perp; reasoner in <code>oxd-reasoner</code> precomputes per-class extents as <code>TermBitSet</code>s (cached to disk and invalidated on change), so an <code>IS-A</code> filter is a ready bitset rather than a query-time traversal.</p>
+        </div>
+        <div class="card">
+          <h3>Spatial (grid) index</h3>
+          <p>An opt-in <strong>equirectangular grid</strong> over a GeoPoint field. It generates a candidate <em>superset</em> of documents near a query point, then refines with exact great-circle (Haversine) distance. The superset invariant means it only makes <code>WITHIN</code> and <code>SORT DISTANCE</code> queries faster, never changes their result, so a query still works (by full scan) with no index defined. See <a href="storage.html#geopoint">GeoPoint values on disk</a>.</p>
+        </div>
+      </div>
+
+      <h2>Extending: the ways in</h2>
+      <p>Every entry point is a thin surface over the same <code>Database</code>: they differ in transport, not in capability.</p>
+      <div class="grid">
+        <a class="card" href="api.html">
+          <h3>HTTP API →</h3>
+          <p>The axum JSON API at <code>https://&lt;id&gt;.oxid-db.com</code> is the ground truth every other client speaks to. Ontology, vector, document, transaction, training, and admin endpoints; the web UI adds an SPA fallback on its own <code>-ui</code> host.</p>
+        </a>
+        <a class="card" href="sdks.html">
+          <h3>SDKs &amp; clients →</h3>
+          <p>Typed clients over the same wire contract (Python, TypeScript/Node, Go, Java, PHP, and C#), each with a query builder for OxQL and full transaction support.</p>
+        </a>
+        <a class="card" href="mcp.html">
+          <h3>MCP integration →</h3>
+          <p>The opt-in <code>oxd-surface-mcp</code> add-on exposes the engine to AI agents as MCP tools (query, classify, predict-links, and more) over stdio or Streamable HTTP.</p>
+        </a>
+        <div class="card">
+          <h3>Embedded Python</h3>
+          <p><code>oxd-python</code> runs the engine <em>in-process</em> (no server, no network hop) for notebooks and scripts that want the database as a library.</p>
+        </div>
+      </div>
+
+      <h2>Where to go next</h2>
+      <div class="grid">
+        <a class="card" href="storage.html">
+          <h3>Storage &amp; Durability →</h3>
+          <p>The on-disk format, the write-ahead log, MVCC snapshots and <code>AS OF</code> reads, strict-2PL transactions, checkpoints, backup, and off-RAM residency.</p>
+        </a>
+        <a class="card" href="api.html">
+          <h3>HTTP API →</h3>
+          <p>The full route table and request / response shapes, the surface that every step in the life of a query ultimately serializes to.</p>
+        </a>
+      </div>
+
+      <div class="pager">
+        <a href="operations.html"><span class="dir">← Previous</span><span class="ttl">Install, CLI &amp; Settings</span></a>
+        <a class="next" href="storage.html"><span class="dir">Next →</span><span class="ttl">Storage &amp; Durability</span></a>
+      </div>
+
+      <div class="article-footer">
+        <button class="ghost-btn" id="copyMarkdown">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy page as Markdown
+        </button>
+        <div class="spacer"></div>
+        <span>Oxid-DB 0.9.8 · Built with Rust</span>
+      </div>
+    </main>
+
+    <!-- ============================ TOC (auto-filled by docs.js) -->
+    <aside class="toc" aria-label="On this page">
+      <div class="toc-title">On this page</div>
+      <nav id="tocNav"></nav>
+    </aside>
+  </div>
+
+  <!-- ==================================================== SITE FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="Oxid-DB home">
+          <svg class="logo-svg" style="height:28px" viewBox="0 0 1093.9 303.01" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <g>
+              <path class="paper" d="M379.59,206c-10.51,0-20.05-1.98-28.61-5.94-8.56-3.96-15.93-9.28-22.09-15.96-6.16-6.68-10.9-14.21-14.21-22.58s-4.96-17.03-4.96-25.98,1.75-17.97,5.26-26.28c3.5-8.3,8.4-15.73,14.7-22.29,6.29-6.55,13.75-11.71,22.38-15.47,8.63-3.76,18.07-5.64,28.32-5.64s20.05,1.98,28.61,5.94c8.56,3.96,15.89,9.31,21.99,16.06,6.1,6.75,10.8,14.31,14.11,22.68,3.31,8.37,4.96,16.97,4.96,25.79s-1.72,17.78-5.16,26.08c-3.44,8.31-8.31,15.74-14.6,22.28-6.3,6.55-13.72,11.75-22.29,15.57-8.56,3.83-18.04,5.74-28.42,5.74ZM348.25,135.93c0,4.67.65,9.18,1.95,13.53,1.29,4.35,3.24,8.24,5.84,11.68,2.59,3.44,5.87,6.16,9.83,8.17,3.96,2.01,8.66,3.02,14.11,3.02s10.19-1.04,14.21-3.11c4.02-2.07,7.3-4.9,9.83-8.47,2.53-3.57,4.41-7.52,5.64-11.87,1.23-4.35,1.85-8.79,1.85-13.33s-.65-9.15-1.95-13.43c-1.3-4.28-3.25-8.14-5.84-11.58-2.6-3.44-5.91-6.13-9.93-8.08-4.02-1.95-8.69-2.92-14.01-2.92s-10.15,1.04-14.11,3.11c-3.96,2.08-7.23,4.84-9.83,8.27-2.6,3.44-4.51,7.33-5.74,11.68-1.23,4.35-1.85,8.79-1.85,13.33Z"/>
+              <path class="paper" d="M568.97,94.09v-31.14h36.98v31.14h-36.98ZM568.97,205.03v-102.38h36.98v102.38h-36.98Z"/>
+              <path class="paper" d="M619.18,154.52c0-9.95,1.91-18.86,5.74-26.7,3.83-7.85,9.11-14.04,15.86-18.57,6.75-4.53,14.47-6.8,23.16-6.8,6.62,0,12.72,1.53,18.3,4.57,5.58,3.05,9.8,7.24,12.65,12.55v-56.64h36.98v101.21c0,3.5.52,5.94,1.56,7.3,1.04,1.36,2.85,2.17,5.45,2.43v31.14c-6.36,1.29-11.55,1.95-15.57,1.95-6.23,0-11.16-1.17-14.79-3.5-3.63-2.34-5.97-5.9-7.01-10.71l-.78-3.7c-3.5,6.23-8.24,10.77-14.21,13.62-5.97,2.85-12.33,4.28-19.07,4.28s-13.46-1.28-19.37-3.83c-5.91-2.55-11.03-6.16-15.38-10.81-4.35-4.66-7.69-10.21-10.02-16.65-2.34-6.44-3.5-13.5-3.5-21.15ZM695.09,165.74v-17.57c-1.17-2.86-2.76-5.38-4.77-7.57-2.01-2.18-4.25-3.89-6.72-5.14-2.47-1.25-5-1.87-7.59-1.87-2.72,0-5.22.56-7.49,1.68-2.27,1.12-4.25,2.68-5.94,4.67-1.69,2-2.99,4.3-3.89,6.91-.91,2.62-1.36,5.42-1.36,8.41s.49,5.92,1.46,8.41c.97,2.49,2.37,4.64,4.18,6.45,1.82,1.81,3.96,3.21,6.42,4.21,2.46,1,5.19,1.49,8.17,1.49,1.82,0,3.5-.22,5.06-.65,1.56-.43,3.05-1.06,4.48-1.87,1.43-.81,2.82-1.87,4.18-3.18,1.36-1.31,2.63-2.77,3.8-4.39Z"/>
+              <path class="paper" d="M754.46,167.85v-33.09h60.92v33.09h-60.92Z"/>
+              <path class="paper" d="M836.98,205.03V66.84h53.14c15.31,0,28.12,3.08,38.44,9.24,10.32,6.16,18.1,14.47,23.36,24.91,5.26,10.45,7.88,22.03,7.88,34.74,0,14.01-2.89,26.21-8.66,36.59-5.78,10.38-13.89,18.43-24.33,24.14-10.45,5.71-22.68,8.56-36.69,8.56h-53.14ZM921.26,135.74c0-7.14-1.23-13.4-3.7-18.78-2.47-5.38-6.03-9.57-10.7-12.55-4.67-2.98-10.25-4.48-16.74-4.48h-15.18v72.02h15.18c6.62,0,12.23-1.56,16.84-4.67,4.6-3.11,8.14-7.43,10.61-12.94,2.46-5.51,3.7-11.71,3.7-18.59Z"/>
+              <path class="paper" d="M1093.9,169.61c0,8.31-2.24,15.05-6.71,20.24-4.48,5.19-10.48,9.02-18,11.48-7.53,2.47-15.83,3.7-24.91,3.7h-67.93V66.84h80.19c6.49,0,12.1,1.72,16.84,5.16,4.74,3.44,8.37,7.88,10.9,13.33,2.53,5.45,3.8,11.1,3.8,16.93,0,6.36-1.65,12.52-4.96,18.49-3.31,5.97-8.27,10.45-14.89,13.43,7.91,2.33,14.18,6.42,18.78,12.26,4.6,5.84,6.91,13.56,6.91,23.16ZM1014.29,99.15v21.22h25.89c1.68,0,3.31-.29,4.87-.88s2.85-1.66,3.89-3.21c1.04-1.56,1.56-3.76,1.56-6.62,0-2.59-.42-4.64-1.27-6.13-.85-1.49-1.95-2.59-3.31-3.31-1.36-.71-2.89-1.07-4.57-1.07h-27.06ZM1055.36,161.82c0-2.34-.42-4.38-1.27-6.13-.84-1.75-1.98-3.14-3.41-4.18-1.43-1.04-3.11-1.56-5.06-1.56h-31.34v23.16h29.97c2.07,0,3.96-.45,5.64-1.36,1.68-.91,3.02-2.2,3.99-3.89.97-1.68,1.46-3.7,1.46-6.03Z"/>
+              <path class="paper" d="M560.71,204.84h-37.56l-71.63-101.02h37.56l71.63,101.02Z"/>
+              <path class="paper" d="M503.47,180.84s-27.55,41.45-76.61,59.23l94.91-135.47h37.56l-55.86,76.24Z"/>
+              <path class="ink" d="M131.21,0L0,75.75v151.5l131.21,75.75,131.21-75.75V75.75L131.21,0ZM221.38,203.56l-90.17,52.06-90.17-52.06v-104.12l90.17-52.06,90.17,52.06v104.12Z"/>
+              <polygon class="rust2" points="0 227.26 131.21 151.5 131.21 303.01 0 227.26"/>
+            </g>
+          </svg>
+        </a>
+        <p>A Rust engine that unifies ontology reasoning and vector search in one system.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Docs</h4>
+          <a href="quickstart.html">Quick Start</a>
+          <a href="oxql.html">OxQL</a>
+          <a href="api.html">HTTP API</a>
+          <a href="sdks.html">SDKs</a>
+        </div>
+        <div class="footer-col">
+          <h4>Concepts</h4>
+          <a href="ontologies.html">Ontologies</a>
+          <a href="vectors.html">Vectors</a>
+          <a href="hybrid-queries.html">Hybrid Queries</a>
+          <a href="kge.html">Link Prediction</a>
+        </div>
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="access.html">Access &amp; Hosting</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="storage.html">Storage</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Oxid-DB · Documentation v0.9.8</div>
+  </footer>
+
+  <!-- ==================================================== SEARCH MODAL -->
+  <div class="overlay" id="searchOverlay">
+    <div class="search-modal" role="dialog" aria-modal="true" aria-label="Search documentation">
+      <div class="search-input-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Search documentation…" autocomplete="off" spellcheck="false" />
+        <span class="kbd" style="font-family:var(--font-mono);font-size:11px;border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--muted)">Esc</span>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+      <div class="search-foot">
+        <span><span class="kbd">↑</span> <span class="kbd">↓</span> navigate</span>
+        <span><span class="kbd">↵</span> open</span>
+        <span><span class="kbd">esc</span> close</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/highlight.min.js" defer></script>
+  <script src="assets/docs.js" defer></script>
+</body>
+</html>
