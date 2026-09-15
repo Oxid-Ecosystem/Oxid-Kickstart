@@ -29,9 +29,9 @@ Run the interactive setup and enter your instance URL and API key when prompted:
 make init
 ```
 
-This writes a `.env` file (gitignored) with `OXID_URL`, `OXID_API_KEY` and a
-default `OXID_VERSION`. If you would rather do it by hand, copy `.env.example` to
-`.env` and fill in the values yourself.
+This writes a `.env` file (gitignored) with `OXID_URL` and `OXID_API_KEY`. If
+you would rather do it by hand, copy `.env.example` to `.env` and fill in the
+values yourself.
 
 Drop the documentation bundle into `./docs`, one folder per engine version:
 
@@ -46,7 +46,6 @@ docs/
 ```bash
 make init      # create .env by entering your instance URL and API key
 make test      # check that your instance is online and your key works
-make version   # print the engine version your instance reports
 make start     # open a feasibility session for your idea
 make docs      # list the documentation versions you have locally
 make help      # print this list
@@ -57,21 +56,13 @@ make help      # print this list
 Asks two questions, the base URL of your OxidDB instance and its API key, and
 writes them to `.env`. A trailing slash on the URL is stripped. The API key can be
 left empty if authentication is disabled on your instance. If a `.env` already
-exists you are asked before it is overwritten. `OXID_VERSION` is filled with the
-default from `.env.example`; run `make version` to check what your instance
-actually reports and adjust it if they differ.
+exists you are asked before it is overwritten.
 
 ## make test
 
 Calls the health endpoint on your instance using the values in `.env`. It
 distinguishes between an unreachable host, a rejected API key, and a healthy
 instance, so you know which thing to fix.
-
-## make version
-
-Asks the instance which engine build it is running. Use this to confirm that
-`OXID_VERSION` in `.env` matches a folder under `./docs`, so `make start` reads
-the right documentation.
 
 ## make start
 

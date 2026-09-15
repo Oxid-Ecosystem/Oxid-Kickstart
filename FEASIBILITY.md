@@ -13,9 +13,9 @@ Before you evaluate anything:
 
 1. Look for a `./docs` folder. It contains one subfolder per engine version.
 2. Determine which version the developer is actually running. Check, in order:
-   - the `OXID_VERSION` value in `.env`, if present
-   - the output of `make version`, which queries the live instance
-   - if neither is available, ask them
+   - the live instance: read `OXID_URL` and `OXID_API_KEY` from `.env` and call
+     `GET $OXID_URL/version` with the key as a bearer token
+   - if `.env` is missing or the instance does not answer, ask them
 3. Read the documentation for **that** version only. Do not evaluate against a
    newer version's features, and do not assume the newest folder is theirs.
 4. If `./docs` is missing or the matching version folder is absent, say so and
